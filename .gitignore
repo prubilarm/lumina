@@ -1,0 +1,25 @@
+# Node modules
+node_modules/
+dist/
+build/
+.env
+
+# Mobile
+.expo/
+*.jks
+*.p12
+*.key
+*.mobileprovision
+
+# Database
+db_data/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
