@@ -16,7 +16,7 @@ const Login = () => {
     setLoading(true);
     try {
       await login(email, password);
-      alerts.success('¡Bienvenido!', 'Sesión iniciada correctamente');
+      await alerts.success('¡Bienvenido!', 'Sesión iniciada correctamente');
       navigate('/');
     } catch (err) {
       console.error(err);

@@ -14,7 +14,7 @@ const Register = () => {
     setLoading(true);
     try {
       await api.post('/auth/register', formData);
-      alerts.success('¡Registro Exitoso!', 'Ya puedes iniciar sesión con tus credenciales.');
+      await alerts.success('¡Registro Exitoso!', 'Ya puedes iniciar sesión con tus credenciales.');
       navigate('/login');
     } catch (err) {
       alerts.error('Error en Registro', err.response?.data?.message || 'Error al registrar usuario');
