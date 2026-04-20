@@ -21,8 +21,8 @@ const Navbar = () => {
   return (
     <nav className="navbar">
       <Link to="/" className="logo" style={{ textDecoration: 'none' }}>
-        <Landmark size={28} />
-        <span>ATM Premium</span>
+        <Landmark size={28} className="logo-icon" />
+        <span>Axiom Premium</span>
       </Link>
       
       <div style={{ display: 'flex', alignItems: 'center', gap: '2rem' }}>

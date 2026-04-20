@@ -1,6 +1,7 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import Navbar from './components/Navbar';
+import Landing from './pages/Landing';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
@@ -9,7 +10,7 @@ import Transfer from './pages/Transfer';
 
 const PrivateRoute = ({ children }) => {
   const { user, loading } = useAuth();
-  if (loading) return <div>Cargando...</div>;
+  if (loading) return <div className="loading-spinner">Cargando...</div>;
   return user ? children : <Navigate to="/login" />;
 };
 
@@ -19,6 +20,7 @@ function App() {
       <AuthProvider>
         <div className="min-h-screen">
           <Routes>
+            <Route path="/" element={<Landing />} />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
             <Route 
@@ -29,7 +31,8 @@ function App() {
                     <Navbar />
                     <main className="container py-8">
                       <Routes>
-                        <Route path="/" element={<Dashboard />} />
+                        <Route path="/dashboard" element={<Dashboard />} />
+                        <Route path="/" element={<Navigate to="/dashboard" />} />
                         <Route path="/transacciones" element={<Transactions />} />
                         <Route path="/transferir" element={<Transfer />} />
                       </Routes>
