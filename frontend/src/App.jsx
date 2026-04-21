@@ -10,6 +10,7 @@ import Transfer from './pages/Transfer';
 
 const PrivateRoute = ({ children }) => {
   const { user, loading } = useAuth();
+  // Axiom Premium Banking - Redespliegue automático
   if (loading) return <div className="loading-spinner">Cargando...</div>;
   return user ? children : <Navigate to="/login" />;
 };
