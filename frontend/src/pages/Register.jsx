@@ -31,7 +31,7 @@ const Register = () => {
           <p style={{ color: 'var(--text-light)' }}>Únete a ATM Premium</p>
         </div>
 
-        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+        <form onSubmit={handleSubmit} autoComplete="off" style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
           {/* alerts handle errors now */}
           
           <div>
@@ -40,6 +40,7 @@ const Register = () => {
               <User size={18} style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-light)' }} />
               <input 
                 className="input" 
+                autoComplete="off"
                 style={{ paddingLeft: '3rem' }}
                 value={formData.name}
                 onChange={(e) => setFormData({...formData, name: e.target.value})}
@@ -55,6 +56,7 @@ const Register = () => {
               <input 
                 type="email" 
                 className="input" 
+                autoComplete="off"
                 style={{ paddingLeft: '3rem' }}
                 value={formData.email}
                 onChange={(e) => setFormData({...formData, email: e.target.value})}
@@ -70,6 +72,7 @@ const Register = () => {
               <input 
                 type="password" 
                 className="input" 
+                autoComplete="new-password"
                 style={{ paddingLeft: '3rem' }}
                 value={formData.password}
                 onChange={(e) => setFormData({...formData, password: e.target.value})}

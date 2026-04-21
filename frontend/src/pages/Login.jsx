@@ -37,7 +37,7 @@ const Login = () => {
           <p style={{ color: 'var(--text-light)' }}>Ingresa a tu cuenta segura</p>
         </div>
 
-        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+        <form onSubmit={handleSubmit} autoComplete="off" style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
           {/* alerts handle errors now */}
           
           <div>
@@ -47,6 +47,7 @@ const Login = () => {
               <input 
                 type="email" 
                 className="input" 
+                autoComplete="off"
                 placeholder="usuario@ejemplo.com" 
                 style={{ paddingLeft: '3rem' }}
                 value={email}
@@ -63,6 +64,7 @@ const Login = () => {
               <input 
                 type="password" 
                 className="input" 
+                autoComplete="new-password"
                 placeholder="••••••••" 
                 style={{ paddingLeft: '3rem' }}
                 value={password}
