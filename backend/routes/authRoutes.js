@@ -1,10 +1,17 @@
 const express = require('express');
 const router = express.Router();
-const { register, login } = require('../controllers/authController');
+const authController = require('../controllers/authController');
 
 /**
  * @swagger
- * /api/auth/register:
+ * tags:
+ *   name: Auth
+ *   description: Authentication and User Registration
+ */
+
+/**
+ * @swagger
+ * /auth/register:
  *   post:
  *     summary: Register a new user
  *     tags: [Auth]
@@ -14,22 +21,30 @@ const { register, login } = require('../controllers/authController');
  *         application/json:
  *           schema:
  *             type: object
+ *             required:
+ *               - full_name
+ *               - email
+ *               - password
  *             properties:
- *               username:
+ *               full_name:
+ *                 type: string
+ *               email:
  *                 type: string
  *               password:
  *                 type: string
  *     responses:
  *       201:
  *         description: User registered successfully
+ *       400:
+ *         description: User already exists or invalid data
  */
-router.post('/register', register);
+router.post('/register', authController.register);
 
 /**
  * @swagger
- * /api/auth/login:
+ * /auth/login:
  *   post:
- *     summary: Login a user
+ *     summary: Login to the system
  *     tags: [Auth]
  *     requestBody:
  *       required: true
@@ -37,15 +52,20 @@ router.post('/register', register);
  *         application/json:
  *           schema:
  *             type: object
+ *             required:
+ *               - email
+ *               - password
  *             properties:
- *               username:
+ *               email:
  *                 type: string
  *               password:
  *                 type: string
  *     responses:
  *       200:
- *         description: Login successful
+ *         description: Login successful, returns JWT token
+ *       401:
+ *         description: Unauthorized
  */
-router.post('/login', login);
+router.post('/login', authController.login);
 
 module.exports = router;

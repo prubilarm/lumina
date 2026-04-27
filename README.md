@@ -1,72 +1,67 @@
-# ATM Premium - Sistema de Cajero Automático Profesional
+# Sentendar - Online Banking System (Banca en Línea)
 
-Este es un sistema completo de Cajero Automático (ATM) que incluye un Backend robusto en Node.js, una Base de Datos MySQL dockerizada, una interfaz Web profesional en React y una aplicación móvil para transferencias.
+Sentendar es una plataforma bancaria de grado fin-tech completa, diseñada para ser segura, escalable y con una experiencia de usuario premium.
 
-## 🚀 Características
+## 🚀 Características Principales
 
-- **Seguridad**: Autenticación con JWT y encriptación de contraseñas con bcrypt.
-- **Backend**: Arquitectura modular por capas (Controllers, Routes, Middlewares).
-- **Frontend Web**: Dashboard moderno, consulta de saldo, retiros, depósitos e historial.
-- **App Móvil**: Realización de transferencias y consulta de movimientos.
-- **Infraestructura**: Despliegue simplificado con Docker Compose.
+*   **Multicuenta**: Cada usuario inicia con una Cuenta de Ahorros y una Cuenta Corriente.
+*   **Transferencias Pro**: Soporte para transferencias entre cuentas propias y a terceros con validación en tiempo real.
+*   **Dashboard Premium**: Interfaz moderna con Glassmorphism, gráficas de gastos y balance total unificado.
+*   **Sistema de Notificaciones**: Confirmación de cuenta automática vía Email (Nodemailer).
+*   **Panel Administrativo**: Los administradores pueden visualizar métricas globales y transacciones de todo el sistema.
+*   **Documentación API**: Swagger UI integrado para facilitar la integración de desarrolladores.
+*   **Core Híbrido**: Motor de base de datos inteligente que funciona con PostgreSQL (Supabase) o en Memoria (Mock) para pruebas instantáneas.
 
 ---
 
-## 🛠️ Tecnologías Usadas
+## 🛠️ Stack Tecnológico
 
-- **Backend**: Node.js, Express, MySQL, Docker.
-- **Frontend**: React, Vite, Axios, Lucide React.
-- **Mobile**: React Native (Expo).
-- **Base de Datos**: MySQL 8.0.
+*   **Backend**: Node.js + Express
+*   **Web**: React (Vite) + Tailwind CSS + Lucide
+*   **Mobile**: React Native (Expo) + Lucide Native
+*   **DB**: PostgreSQL / Supabase
+*   **Email**: Nodemailer (Ethereal / SMTP)
+*   **Docs**: Swagger (OpenAPI 3.0)
 
 ---
 
 ## ⚙️ Instalación y Ejecución
 
-### 1. Requisitos Previos
-- [Docker & Docker Desktop](https://www.docker.com/products/docker-desktop)
-- [Node.js](https://nodejs.org/) (v18 o superior)
+### 1. Requisitos
+- [Node.js](https://nodejs.org/) (v18+)
+- [Docker](https://www.docker.com/) (Opcional, para DB real)
 
-### 2. Levantar la Infraestructura (Backend + DB)
-
-Desde la raíz del proyecto ejecutiva:
+### 2. Backend
 ```bash
-docker-compose up --build
-```
-Esto levantará la base de datos en el puerto `3306` y el servidor API en el puerto `5000`.
-
-### 3. Ejecutar Frontend (Web)
-
-Desde la carpeta `frontend`:
-```bash
+cd backend
 npm install
 npm run dev
 ```
-Accede a `http://localhost:5173`.
+*   La API correrá en `http://localhost:5000`
+*   Documentación Swagger: `http://localhost:5000/api-docs`
 
-### 4. Ejecutar Mobile App
-
-Desde la carpeta `mobile`:
+### 3. Frontend (Web)
 ```bash
+cd frontend
+npm install
+npm run dev
+```
+*   Accede a `http://localhost:3000` (o el puerto que asigne Vite)
+
+### 4. Mobile (React Native)
+```bash
+cd mobile
 npm install
 npx expo start
 ```
 
 ---
 
-## 🧪 Datos de Prueba
+## 🔐 Seguridad y Roles
 
-El sistema incluye dos cuentas iniciales:
-
-1. **Usuario 1:**
-   - Email: `juan@example.com`
-   - Password: `password123`
-   - Saldo Inicial: $5,000
-
-2. **Usuario 2:**
-   - Email: `maria@example.com`
-   - Password: `password123`
-   - Saldo Inicial: $2,500
+El sistema utiliza **JWT (JSON Web Tokens)** para la seguridad de las rutas.
+*   **Admin**: Asignado automáticamente al primer usuario registrado. Tiene acceso al Panel Administrativo.
+*   **User**: Acceso a banca personal, transferencias y perfil.
 
 ---
 
@@ -74,15 +69,18 @@ El sistema incluye dos cuentas iniciales:
 
 ```
 /
-├── backend/            # API REST en Node.js
-├── frontend/           # Interface Web en React
-├── mobile/             # App Móvil en React Native
-├── database/           # Scripts SQL de inicialización
-├── docker-compose.yml  # Orquestación de contenedores
-└── README.md           # Documentación
+├── backend/            # API REST, Controladores y Lógica
+├── frontend/           # Aplicación Web React (Vite)
+├── mobile/             # App Móvil React Native (Expo)
+├── database/           # Scripts SQL para Supabase/Postgres
+└── docker-compose.yml  # Configuración de servicios locales
 ```
 
 ---
 
-## 📜 Licencia
-Desarrollado con ❤️ para fines demostrativos de ingeniería de software.
+## 📧 Pruebas de Correo
+Al registrarte, revisa la consola (terminal) del **backend**. Verás un enlace de **Ethereal Email** donde puedes previsualizar el correo de bienvenida generado.
+
+---
+
+Desarrollado por el equipo de arquitectura senior de Sentendar.

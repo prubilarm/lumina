@@ -1,22 +1,28 @@
 const jwt = require('jsonwebtoken');
 
-const protect = (req, res, next) => {
-  let token;
+const verifyToken = (req, res, next) => {
+    const authHeader = req.headers['authorization'];
+    const token = authHeader && authHeader.split(' ')[1];
 
-  if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
-    try {
-      token = req.headers.authorization.split(' ')[1];
-      const decoded = jwt.verify(token, process.env.JWT_SECRET || 'supersecretjwtkey_12345');
-      req.user = decoded;
-      next();
-    } catch (error) {
-      res.status(401).json({ message: 'No autorizado, token fallido' });
+    if (!token) {
+        return res.status(403).json({ message: 'No se proporcionó un token' });
     }
-  }
 
-  if (!token) {
-    res.status(401).json({ message: 'No autorizado, no hay token' });
-  }
+    try {
+        const decoded = jwt.verify(token, process.env.JWT_SECRET || 'sentendar_premium_secret_key_2024');
+        req.user = decoded;
+        next();
+    } catch (err) {
+        return res.status(401).json({ message: 'Token inválido o expirado' });
+    }
 };
 
-module.exports = { protect };
+const isAdmin = (req, res, next) => {
+    if (req.user && req.user.role === 'admin') {
+        next();
+    } else {
+        res.status(403).json({ message: 'Se requiere rol de Administrador' });
+    }
+};
+
+module.exports = { verifyToken, isAdmin };

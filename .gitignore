@@ -1,25 +1,9 @@
-# Node modules
 node_modules/
+.env
+.DS_Store
 dist/
 build/
-.env
-
-# Mobile
 .expo/
-*.jks
-*.p12
-*.key
-*.mobileprovision
-
-# Database
-db_data/
-
-# IDE
-.vscode/
-.idea/
-*.swp
-*.swo
-
-# OS
-.DS_Store
-Thumbs.db
+*.apk
+*.log
+.vercel

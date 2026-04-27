@@ -1,231 +1,366 @@
-import React, { useState, useEffect } from 'react';
-import { StyleSheet, Text, View, TextInput, TouchableOpacity, ScrollView, Alert, ActivityIndicator } from 'react-native';
-import { Landmark, ArrowRight, RefreshCw, LogIn } from 'lucide-react-native';
+import React, { useState, useEffect, useCallback } from 'react';
+import { StyleSheet, View, Text, ScrollView, TouchableOpacity, SafeAreaView, Dimensions, RefreshControl, ActivityIndicator } from 'react-native';
+import { Wallet, ArrowUpRight, ArrowDownLeft, Plus, Send, Bell, User, LogOut } from 'lucide-react-native';
+import { LinearGradient } from 'expo-linear-gradient';
+import { useRouter } from 'expo-router';
 import api, { setAuthToken } from '../../services/api';
 
-export default function TransferScreen() {
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [email, setEmail] = useState('juan@example.com');
-  const [password, setPassword] = useState('password123');
-  const [account, setAccount] = useState(null);
-  const [targetAccount, setTargetAccount] = useState('');
-  const [amount, setAmount] = useState('');
-  const [loading, setLoading] = useState(false);
+const { width } = Dimensions.get('window');
 
-  const handleLogin = async () => {
-    setLoading(true);
-    try {
-      const { data } = await api.post('/auth/login', { email, password });
-      setAuthToken(data.token);
-      setIsLoggedIn(true);
-      fetchAccount();
-    } catch (error) {
-      Alert.alert('Error', 'Credenciales inválidas');
-    } finally {
-      setLoading(false);
-    }
-  };
+export default function DashboardScreen() {
+    const router = useRouter();
+    const [accounts, setAccounts] = useState<any[]>([]);
+    const [transactions, setTransactions] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [refreshing, setRefreshing] = useState(false);
 
-  const fetchAccount = async () => {
-    try {
-      const { data } = await api.get('/accounts/me');
-      setAccount(data);
-    } catch (error) {
-      console.error(error);
-    }
-  };
+    const fetchData = async () => {
+        try {
+            const [balanceRes, historyRes] = await Promise.all([
+                api.get('/user/balance'),
+                api.get('/transactions/history')
+            ]);
+            setAccounts(balanceRes.data);
+            setTransactions(historyRes.data);
+        } catch (err) {
+            console.error('Error fetching dashboard data:', err);
+        } finally {
+            setLoading(false);
+            setRefreshing(false);
+        }
+    };
 
-  const handleTransfer = async () => {
-    if (!targetAccount || !amount) {
-      return Alert.alert('Error', 'Complete todos los campos');
-    }
-    setLoading(true);
-    try {
-      await api.post('/transactions/transfer', {
-        fromAccountId: account.id,
-        toAccountNumber: targetAccount,
-        amount: parseFloat(amount)
-      });
-      Alert.alert('Éxito', 'Transferencia realizada correctamente');
-      setTargetAccount('');
-      setAmount('');
-      fetchAccount();
-    } catch (error) {
-      Alert.alert('Error', error.response?.data?.message || 'Error en la transferencia');
-    } finally {
-      setLoading(false);
-    }
-  };
+    useEffect(() => {
+        fetchData();
+    }, []);
 
-  if (!isLoggedIn) {
+    const onRefresh = useCallback(() => {
+        setRefreshing(true);
+        fetchData();
+    }, []);
+
+    const handleLogout = () => {
+        setAuthToken(null);
+        router.replace('/login');
+    };
+
+    const totalBalance = accounts.reduce((acc, curr) => acc + parseFloat(curr.balance), 0);
+    const mainAccount = accounts[0] || { balance: 0, account_number: '---' };
+
+    if (loading && !refreshing) {
+        return (
+            <View style={[styles.container, styles.centered]}>
+                <ActivityIndicator size="large" color="#6366f1" />
+            </View>
+        );
+    }
+
     return (
-      <View style={styles.container}>
-        <View style={styles.header}>
-          <Landmark size={48} color="#1e3a8a" />
-          <Text style={styles.title}>ATM Mobile</Text>
-          <Text style={styles.subtitle}>Inicia sesión para transferir</Text>
-        </View>
+        <SafeAreaView style={styles.container}>
+            <ScrollView 
+                showsVerticalScrollIndicator={false} 
+                contentContainerStyle={styles.scrollContent}
+                refreshControl={
+                    <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#6366f1" />
+                }
+            >
+                {/* Header */}
+                <View style={styles.header}>
+                    <View>
+                        <Text style={styles.greeting}>Hola de nuevo,</Text>
+                        <Text style={styles.userName}>Bienvenido a Sentendar</Text>
+                    </View>
+                    <View style={styles.headerIcons}>
+                        <TouchableOpacity style={styles.iconButton} onPress={handleLogout}>
+                            <LogOut color="#ef4444" size={24} />
+                        </TouchableOpacity>
+                        <TouchableOpacity style={[styles.iconButton, styles.avatarButton]}>
+                            <User color="#fff" size={24} />
+                        </TouchableOpacity>
+                    </View>
+                </View>
 
-        <View style={styles.card}>
-          <TextInput 
-            style={styles.input} 
-            placeholder="Email" 
-            value={email} 
-            onChangeText={setEmail}
-            keyboardType="email-address"
-            autoCapitalize="none"
-          />
-          <TextInput 
-            style={styles.input} 
-            placeholder="Contraseña" 
-            value={password} 
-            onChangeText={setPassword}
-            secureTextEntry
-          />
-          <TouchableOpacity style={styles.button} onPress={handleLogin} disabled={loading}>
-            {loading ? <ActivityIndicator color="#fff" /> : (
-              <>
-                <LogIn size={20} color="#fff" />
-                <Text style={styles.buttonText}>Entrar</Text>
-              </>
-            )}
-          </TouchableOpacity>
-        </View>
-      </View>
+                {/* Card Section */}
+                <LinearGradient
+                    colors={['#6366f1', '#4f46e5']}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 1 }}
+                    style={styles.balanceCard}
+                >
+                    <View style={styles.cardHeader}>
+                        <Text style={styles.cardLabel}>SALDO TOTAL</Text>
+                        <Wallet color="rgba(255,255,255,0.6)" size={20} />
+                    </View>
+                    <Text style={styles.balanceAmount}>${totalBalance.toLocaleString()}</Text>
+                    <View style={styles.cardNumberContainer}>
+                        <Text style={styles.cardNumber}>•••• •••• •••• 4291</Text>
+                        <Text style={styles.cardExpiry}>12 / 28</Text>
+                    </View>
+                </LinearGradient>
+
+                {/* Accounts List (Horizontal) */}
+                <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.accountsScroll}>
+                    {accounts.map((acc, i) => (
+                        <View key={i} style={styles.accountItem}>
+                            <Text style={styles.accountType}>{acc.account_number.startsWith('SAV') ? 'Ahorros' : 'Corriente'}</Text>
+                            <Text style={styles.accountNumberText}>{acc.account_number}</Text>
+                            <Text style={styles.accountBalance}>${parseFloat(acc.balance).toLocaleString()}</Text>
+                        </View>
+                    ))}
+                </ScrollView>
+
+                {/* Quick Actions */}
+                <View style={styles.actionsContainer}>
+                    <ActionItem 
+                        icon={<Send color="#6366f1" size={24} />} 
+                        label="Enviar" 
+                        onPress={() => router.push('/modal')} // Placeholder for transfer
+                    />
+                    <ActionItem 
+                        icon={<Plus color="#6366f1" size={24} />} 
+                        label="Depositar" 
+                        onPress={() => router.push('/deposit')}
+                    />
+                    <ActionItem icon={<ArrowUpRight color="#6366f1" size={24} />} label="Pagar" />
+                    <ActionItem 
+                        icon={<ArrowDownLeft color="#6366f1" size={24} />} 
+                        label="Historial" 
+                        onPress={() => router.push('/transactions')}
+                    />
+                </View>
+
+                {/* Transactions */}
+                <View style={styles.sectionHeader}>
+                    <Text style={styles.sectionTitle}>Actividad Reciente</Text>
+                    <TouchableOpacity onPress={() => router.push('/transactions')}>
+                        <Text style={styles.viewAll}>Ver Todo</Text>
+                    </TouchableOpacity>
+                </View>
+
+                <View style={styles.transactionsList}>
+                    {transactions.length > 0 ? (
+                        transactions.slice(0, 5).map((item) => (
+                            <View key={item.id} style={styles.txItem}>
+                                <View style={[styles.txIcon, { backgroundColor: item.type === 'deposit' ? 'rgba(16,185,129,0.1)' : 'rgba(239,68,68,0.1)' }]}>
+                                    {item.type === 'deposit' ? <ArrowDownLeft color="#10b981" size={20} /> : <ArrowUpRight color="#ef4444" size={20} />}
+                                </View>
+                                <View style={styles.txInfo}>
+                                    <Text style={styles.txTitle}>{item.description || (item.type === 'deposit' ? 'Depósito' : 'Transferencia')}</Text>
+                                    <Text style={styles.txDate}>{new Date(item.created_at).toLocaleDateString()}</Text>
+                                </View>
+                                <Text style={[styles.txAmount, { color: item.type === 'deposit' ? '#10b981' : '#fff' }]}>
+                                    {item.type === 'deposit' ? '+' : '-'}${parseFloat(item.amount).toFixed(2)}
+                                </Text>
+                            </View>
+                        ))
+                    ) : (
+                        <Text style={styles.emptyText}>No hay transacciones aún</Text>
+                    )}
+                </View>
+            </ScrollView>
+        </SafeAreaView>
     );
-  }
+}
 
-  return (
-    <ScrollView style={styles.mainScroll} contentContainerStyle={styles.container}>
-      <View style={styles.balanceCard}>
-        <Text style={styles.balanceLabel}>Saldo Disponible</Text>
-        <Text style={styles.balanceValue}>
-          ${account ? parseFloat(account.balance).toLocaleString() : '---'}
-        </Text>
-        <Text style={styles.accNumber}>Cuenta: {account?.account_number}</Text>
-      </View>
-
-      <Text style={styles.sectionTitle}>Nueva Transferencia</Text>
-      
-      <View style={styles.card}>
-        <Text style={styles.label}>N° de Cuenta Destino</Text>
-        <TextInput 
-          style={styles.input} 
-          placeholder="Ej: 1000000002" 
-          value={targetAccount} 
-          onChangeText={setTargetAccount}
-          keyboardType="numeric"
-        />
-
-        <Text style={styles.label}>Monto a Enviar</Text>
-        <TextInput 
-          style={styles.input} 
-          placeholder="0.00" 
-          value={amount} 
-          onChangeText={setAmount}
-          keyboardType="numeric"
-        />
-
-        <TouchableOpacity style={[styles.button, styles.transferBtn]} onPress={handleTransfer} disabled={loading}>
-          <RefreshCw size={20} color="#fff" />
-          <Text style={styles.buttonText}>Confirmar Envío</Text>
+function ActionItem({ icon, label, onPress }: any) {
+    return (
+        <TouchableOpacity style={styles.actionButton} onPress={onPress}>
+            <View style={styles.actionIcon}>{icon}</View>
+            <Text style={styles.actionLabel}>{label}</Text>
         </TouchableOpacity>
-      </View>
-    </ScrollView>
-  );
+    );
 }
 
 const styles = StyleSheet.create({
-  mainScroll: {
-    backgroundColor: '#f8fafc',
-  },
-  container: {
-    padding: 24,
-    flex: 1,
-    justifyContent: 'center',
-  },
-  header: {
-    alignItems: 'center',
-    marginBottom: 40,
-  },
-  title: {
-    fontSize: 28,
-    fontWeight: '800',
-    color: '#1e3a8a',
-    marginTop: 12,
-  },
-  subtitle: {
-    color: '#64748b',
-    marginTop: 8,
-  },
-  balanceCard: {
-    backgroundColor: '#1e3a8a',
-    padding: 24,
-    borderRadius: 20,
-    marginBottom: 32,
-    marginTop: 40,
-  },
-  balanceLabel: {
-    color: 'rgba(255,255,255,0.7)',
-    fontSize: 14,
-  },
-  balanceValue: {
-    color: '#fff',
-    fontSize: 32,
-    fontWeight: '800',
-    marginVertical: 8,
-  },
-  accNumber: {
-    color: 'rgba(255,255,255,0.8)',
-    fontSize: 14,
-  },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: '700',
-    marginBottom: 16,
-    color: '#0f172a',
-  },
-  card: {
-    backgroundColor: '#fff',
-    padding: 20,
-    borderRadius: 16,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 4,
-  },
-  label: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#64748b',
-    marginBottom: 8,
-  },
-  input: {
-    borderWidth: 1,
-    borderColor: '#e2e8f0',
-    borderRadius: 12,
-    padding: 12,
-    marginBottom: 16,
-    fontSize: 16,
-    backgroundColor: '#f8fafc',
-  },
-  button: {
-    backgroundColor: '#1e3a8a',
-    padding: 16,
-    borderRadius: 12,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 8,
-  },
-  transferBtn: {
-    marginTop: 8,
-    backgroundColor: '#3b82f6',
-  },
-  buttonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '700',
-  },
+    container: {
+        flex: 1,
+        backgroundColor: '#0f172a',
+    },
+    centered: {
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    scrollContent: {
+        padding: 20,
+    },
+    header: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        marginBottom: 30,
+    },
+    greeting: {
+        color: '#94a3b8',
+        fontSize: 14,
+    },
+    userName: {
+        color: '#fff',
+        fontSize: 20,
+        fontWeight: 'bold',
+    },
+    headerIcons: {
+        flexDirection: 'row',
+        gap: 12,
+    },
+    iconButton: {
+        width: 44,
+        height: 44,
+        backgroundColor: '#1e293b',
+        borderRadius: 12,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    avatarButton: {
+        backgroundColor: '#6366f1',
+    },
+    balanceCard: {
+        width: '100%',
+        borderRadius: 24,
+        padding: 24,
+        marginBottom: 20,
+        shadowColor: '#6366f1',
+        shadowOffset: { width: 0, height: 10 },
+        shadowOpacity: 0.3,
+        shadowRadius: 20,
+        elevation: 10,
+    },
+    cardHeader: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        marginBottom: 10,
+    },
+    cardLabel: {
+        color: 'rgba(255,255,255,0.7)',
+        fontSize: 12,
+        fontWeight: 'bold',
+        letterSpacing: 1,
+    },
+    balanceAmount: {
+        color: '#fff',
+        fontSize: 34,
+        fontWeight: '800',
+        marginBottom: 30,
+    },
+    cardNumberContainer: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+    },
+    cardNumber: {
+        color: '#fff',
+        fontSize: 16,
+        letterSpacing: 2,
+    },
+    cardExpiry: {
+        color: 'rgba(255,255,255,0.8)',
+        fontSize: 14,
+        fontWeight: 'bold',
+    },
+    accountsScroll: {
+        marginBottom: 30,
+    },
+    accountItem: {
+        backgroundColor: '#1e293b',
+        padding: 15,
+        borderRadius: 16,
+        marginRight: 15,
+        width: 150,
+        borderWidth: 1,
+        borderColor: 'rgba(255,255,255,0.05)',
+    },
+    accountType: {
+        color: '#6366f1',
+        fontSize: 10,
+        fontWeight: '900',
+        textTransform: 'uppercase',
+    },
+    accountNumberText: {
+        color: '#94a3b8',
+        fontSize: 11,
+        marginVertical: 4,
+    },
+    accountBalance: {
+        color: '#fff',
+        fontSize: 16,
+        fontWeight: 'bold',
+    },
+    actionsContainer: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        marginBottom: 30,
+    },
+    actionButton: {
+        alignItems: 'center',
+        gap: 8,
+    },
+    actionIcon: {
+        width: 60,
+        height: 60,
+        backgroundColor: '#1e293b',
+        borderRadius: 20,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    actionLabel: {
+        color: '#94a3b8',
+        fontSize: 12,
+        fontWeight: 'bold',
+    },
+    sectionHeader: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        marginBottom: 20,
+    },
+    sectionTitle: {
+        color: '#fff',
+        fontSize: 18,
+        fontWeight: 'bold',
+    },
+    viewAll: {
+        color: '#6366f1',
+        fontSize: 14,
+        fontWeight: 'bold',
+    },
+    transactionsList: {
+        gap: 12,
+    },
+    txItem: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: '#1e293b',
+        padding: 16,
+        borderRadius: 16,
+    },
+    txIcon: {
+        width: 48,
+        height: 48,
+        borderRadius: 12,
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginRight: 16,
+    },
+    txInfo: {
+        flex: 1,
+    },
+    txTitle: {
+        color: '#fff',
+        fontSize: 14,
+        fontWeight: 'bold',
+    },
+    txDate: {
+        color: '#94a3b8',
+        fontSize: 11,
+        marginTop: 2,
+    },
+    txAmount: {
+        fontSize: 16,
+        fontWeight: 'bold',
+    },
+    emptyText: {
+        color: '#475569',
+        textAlign: 'center',
+        fontStyle: 'italic',
+        marginTop: 20,
+    }
 });

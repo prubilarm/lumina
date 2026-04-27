@@ -5,6 +5,7 @@ const cors = require('cors');
 const authRoutes = require('./routes/authRoutes');
 const accountRoutes = require('./routes/accountRoutes');
 const transactionRoutes = require('./routes/transactionRoutes');
+const adminRoutes = require('./routes/adminRoutes');
 
 const app = express();
 
@@ -13,12 +14,10 @@ app.use(cors());
 app.use(express.json());
 
 // Routes
-// const { swaggerUi, specs } = require('./swagger');
-// app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(specs));
-
 app.use('/api/auth', authRoutes);
 app.use('/api/accounts', accountRoutes);
 app.use('/api/transactions', transactionRoutes);
+app.use('/api/admin', adminRoutes);
 
 // Health check
 app.get('/', (req, res) => {

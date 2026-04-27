@@ -1,10 +1,10 @@
-const pool = require('../config/db');
+const Account = require('../models/Account');
 
 const getAccountByUserId = async (req, res) => {
   try {
-    const { rows: accounts } = await pool.query('SELECT * FROM accounts WHERE user_id = $1', [req.user.id]);
+    const accounts = await Account.findByUserId(req.user.id);
     if (accounts.length === 0) return res.status(404).json({ message: 'Cuenta no encontrada' });
-    res.json(accounts[0]);
+    res.json(accounts); // Sentendar allows multiple accounts
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -12,12 +12,13 @@ const getAccountByUserId = async (req, res) => {
 
 const getBalance = async (req, res) => {
   try {
-    const { rows: accounts } = await pool.query('SELECT balance FROM accounts WHERE id = $1 AND user_id = $2', [req.params.id, req.user.id]);
-    if (accounts.length === 0) return res.status(404).json({ message: 'Cuenta no encontrada' });
-    res.json(accounts[0]);
+    const accounts = await Account.findByUserId(req.user.id);
+    // Return all balances for Sentendar
+    res.json(accounts.map(acc => ({ account_number: acc.account_number, balance: acc.balance, currency: acc.currency })));
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 };
 
 module.exports = { getAccountByUserId, getBalance };
+

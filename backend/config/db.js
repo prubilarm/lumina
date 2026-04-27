@@ -1,89 +1,96 @@
-const sqlite3 = require('sqlite3');
-const { open } = require('sqlite');
-const path = require('path');
+const { Pool } = require('pg');
+require('dotenv').config();
 
-let dbPromise = open({
-  filename: path.join(__dirname, '../database.sqlite'),
-  driver: sqlite3.Database
-}).then(async (db) => {
-  console.log('Using SQLite local database.');
-  
-  // Initialize tables if they don't exist
-  await db.exec(`
-    CREATE TABLE IF NOT EXISTS users (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      name TEXT NOT NULL,
-      email TEXT UNIQUE NOT NULL,
-      password_hash TEXT NOT NULL,
-      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-    );
+let dbInstance;
 
-    CREATE TABLE IF NOT EXISTS accounts (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-      account_number TEXT UNIQUE NOT NULL,
-      balance DECIMAL(15, 2) DEFAULT 0.00,
-      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-    );
-
-    CREATE TABLE IF NOT EXISTS transactions (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      account_id INTEGER NOT NULL REFERENCES accounts(id) ON DELETE CASCADE,
-      type TEXT NOT NULL,
-      amount DECIMAL(15, 2) NOT NULL,
-      balance_after DECIMAL(15, 2) NOT NULL,
-      description TEXT,
-      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-    );
-
-    CREATE TABLE IF NOT EXISTS transfers (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      from_account_id INTEGER NOT NULL REFERENCES accounts(id),
-      to_account_id INTEGER NOT NULL REFERENCES accounts(id),
-      amount DECIMAL(15, 2) NOT NULL,
-      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-    );
-  `);
-
-  return db;
-});
-
-// Wrapper to mimic pg Pool interface
-const pool = {
-  query: async (text, params = []) => {
-    const db = await dbPromise;
-    
-    // Convert PostgreSQL $1, $2 to SQLite ?
-    let sqliteText = text.replace(/\$\d+/g, '?');
-    
-    // SQLite doesn't support "RETURNING id" in older versions usually
-    // We'll strip it and use lastID if it's an INSERT
-    const isInsert = sqliteText.trim().toLowerCase().startsWith('insert');
-    const cleanedText = sqliteText.replace(/RETURNING\s+id/gi, '').trim();
-
-    if (cleanedText.toLowerCase().startsWith('select')) {
-      const rows = await db.all(cleanedText, params);
-      return { rows };
-    } else {
-      const result = await db.run(cleanedText, params);
-      const rows = isInsert ? [{ id: result.lastID }] : [];
-      return { rows, lastID: result.lastID };
-    }
-  },
-  connect: async () => {
-    const db = await dbPromise;
-    return {
-      query: (text, params) => pool.query(text, params),
-      release: () => {}
+if (process.env.DATABASE_URL) {
+    const pool = new Pool({
+        connectionString: process.env.DATABASE_URL,
+        ssl: { rejectUnauthorized: false }
+    });
+    dbInstance = {
+        query: (text, params) => pool.query(text, params),
+        pool
     };
-  },
-  getConnection: async () => {
-    const db = await dbPromise;
-    return {
-      query: (text, params) => pool.query(text, params),
-      release: () => {}
+} else {
+    console.warn('⚠️ DATABASE_URL NOT FOUND. ACTIVATING IN-MEMORY MOCK MODE.');
+    const storage = {
+        users: [
+            { id: 1, full_name: 'Administrador Sentendar', email: 'admin@sentendar.com', password: '$2a$10$6yLT4OUbUQruVZHb0nogtus6Q2zVijbdsSDd3pQw5g77xo837ZHe2', role: 'admin', created_at: new Date() },
+            { id: 2, full_name: 'Pablo Ramirez', email: 'pablo@test.com', password: '$2a$10$6yLT4OUbUQruVZHb0nogtus6Q2zVijbdsSDd3pQw5g77xo837ZHe2', role: 'user', created_at: new Date() }
+        ],
+        accounts: [
+            { id: 1, user_id: 1, account_number: '7421-9923', balance: 10000000, currency: 'USD', created_at: new Date() },
+            { id: 2, user_id: 2, account_number: '9921-4432', balance: 50000, currency: 'USD', created_at: new Date() }
+        ],
+        transactions: []
     };
-  }
-};
 
-module.exports = pool;
+    dbInstance = {
+        query: async (text, params = []) => {
+            const lowerText = text.toLowerCase().trim();
+            if (lowerText.startsWith('insert into users')) {
+                const user = { id: storage.users.length + 1, full_name: params[0], email: params[1], password: params[2], role: params[3] || 'user', created_at: new Date() };
+                storage.users.push(user);
+                return { rows: [user] };
+            }
+            if (lowerText.startsWith('select * from users where email')) {
+                const user = storage.users.find(u => u.email === params[0]);
+                return { rows: user ? [user] : [] };
+            }
+            if (lowerText.startsWith('select count(*) from users')) {
+                return { rows: [{ count: storage.users.length }] };
+            }
+            if (lowerText.startsWith('insert into accounts')) {
+                const acc = { id: storage.accounts.length + 1, user_id: params[0], account_number: params[1], balance: parseFloat(params[2] || 0), currency: 'USD', created_at: new Date() };
+                storage.accounts.push(acc);
+                return { rows: [acc] };
+            }
+            if (lowerText.startsWith('select account_number, balance, currency from accounts where user_id')) {
+                return { rows: storage.accounts.filter(a => a.user_id === params[0]) };
+            }
+            if (lowerText.includes('sum(a.balance)')) {
+                return { rows: storage.users.map(u => ({ ...u, balance: storage.accounts.filter(a => a.user_id === u.id).reduce((s, a) => s + parseFloat(a.balance), 0) })) };
+            }
+            if (lowerText.startsWith('select t.*')) {
+                return { rows: storage.transactions.sort((a,b) => b.created_at - a.created_at) };
+            }
+            if (lowerText.startsWith('select * from accounts where user_id')) {
+                return { rows: storage.accounts.filter(a => a.user_id === parseInt(params[0])) };
+            }
+            return { rows: [] };
+        },
+        pool: {
+            connect: async () => ({
+                query: async (text, params = []) => {
+                    const lowerText = text.toLowerCase().trim();
+                    if (lowerText.startsWith('begin') || lowerText.startsWith('commit') || lowerText.startsWith('rollback')) return {};
+                    if (lowerText.startsWith('select id, balance from accounts where user_id')) {
+                        const acc = storage.accounts.find(a => a.user_id === params[0]);
+                        return { rows: acc ? [acc] : [] };
+                    }
+                    if (lowerText.startsWith('select id from accounts where account_number')) {
+                        const acc = storage.accounts.find(a => a.account_number === params[0]);
+                        return { rows: acc ? [acc] : [] };
+                    }
+                    if (lowerText.startsWith('update accounts set balance = balance')) {
+                        const change = parseFloat(params[0]);
+                        const accId = parseInt(params[1]);
+                        const acc = storage.accounts.find(a => a.id === accId);
+                        if (acc) acc.balance = lowerText.includes('balance +') ? acc.balance + change : acc.balance - change;
+                        return { rows: [acc] };
+                    }
+                    if (lowerText.startsWith('insert into transactions')) {
+                        const tx = { id: storage.transactions.length + 1, sender_account_id: params[0], receiver_account_id: params[1], type: params[2], amount: params[3], description: params[4], created_at: new Date() };
+                        storage.transactions.push(tx);
+                        return { rows: [tx] };
+                    }
+                    return { rows: [] };
+                },
+                release: () => {}
+            })
+        }
+    };
+}
+
+module.exports = dbInstance;

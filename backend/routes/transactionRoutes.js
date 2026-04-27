@@ -1,13 +1,20 @@
 const express = require('express');
 const router = express.Router();
-const { deposit, withdraw, transfer, getHistory } = require('../controllers/transactionController');
-const { protect } = require('../middlewares/authMiddleware');
+const transactionController = require('../controllers/transactionController');
+const { verifyToken } = require('../middlewares/authMiddleware');
 
 /**
  * @swagger
- * /api/transactions/deposit:
+ * tags:
+ *   name: Transactions
+ *   description: Money movement operations
+ */
+
+/**
+ * @swagger
+ * /transactions/deposit:
  *   post:
- *     summary: Deposit money into account
+ *     summary: Deposit money into the account
  *     tags: [Transactions]
  *     security:
  *       - bearerAuth: []
@@ -17,22 +24,24 @@ const { protect } = require('../middlewares/authMiddleware');
  *         application/json:
  *           schema:
  *             type: object
+ *             required:
+ *               - amount
  *             properties:
- *               accountId:
- *                 type: string
  *               amount:
  *                 type: number
+ *               description:
+ *                 type: string
  *     responses:
  *       200:
  *         description: Deposit successful
  */
-router.post('/deposit', protect, deposit);
+router.post('/deposit', verifyToken, transactionController.deposit);
 
 /**
  * @swagger
- * /api/transactions/withdraw:
+ * /transactions/transfer:
  *   post:
- *     summary: Withdraw money from account
+ *     summary: Transfer money to another account
  *     tags: [Transactions]
  *     security:
  *       - bearerAuth: []
@@ -42,62 +51,34 @@ router.post('/deposit', protect, deposit);
  *         application/json:
  *           schema:
  *             type: object
+ *             required:
+ *               - amount
+ *               - receiver_account_number
  *             properties:
- *               accountId:
- *                 type: string
  *               amount:
  *                 type: number
- *     responses:
- *       200:
- *         description: Withdrawal successful
- */
-router.post('/withdraw', protect, withdraw);
-
-/**
- * @swagger
- * /api/transactions/transfer:
- *   post:
- *     summary: Transfer money between accounts
- *     tags: [Transactions]
- *     security:
- *       - bearerAuth: []
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               fromAccountId:
+ *               receiver_account_number:
  *                 type: string
- *               toAccountNumber:
+ *               description:
  *                 type: string
- *               amount:
- *                 type: number
  *     responses:
  *       200:
  *         description: Transfer successful
  */
-router.post('/transfer', protect, transfer);
+router.post('/transfer', verifyToken, transactionController.transfer);
 
 /**
  * @swagger
- * /api/transactions/history/{accountId}:
+ * /transactions/history:
  *   get:
- *     summary: Get transaction history for an account
+ *     summary: Get transaction history
  *     tags: [Transactions]
  *     security:
  *       - bearerAuth: []
- *     parameters:
- *       - in: path
- *         name: accountId
- *         required: true
- *         schema:
- *           type: string
  *     responses:
  *       200:
- *         description: Transaction history retrieved successfully
+ *         description: List of transactions
  */
-router.get('/history/:accountId', protect, getHistory);
+router.get('/history', verifyToken, transactionController.getHistory);
 
 module.exports = router;

@@ -1,59 +1,77 @@
-const pool = require('../config/db');
-const bcrypt = require('bcrypt');
+const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const User = require('../models/User');
+const Account = require('../models/Account');
+const { sendConfirmationEmail } = require('../services/emailService');
 
-const register = async (req, res) => {
-  const { name, email, password } = req.body;
-  try {
-    const { rows: exists } = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
-    if (exists.length > 0) return res.status(400).json({ message: 'Usuario ya existe' });
+exports.register = async (req, res) => {
+    const { full_name, email, password } = req.body;
 
-    const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(password, salt);
+    try {
+        const userExists = await User.findByEmail(email);
+        if (userExists) {
+            return res.status(400).json({ message: 'El correo ya está registrado' });
+        }
 
-    const { rows: result } = await pool.query(
-      'INSERT INTO users (name, email, password_hash) VALUES ($1, $2, $3) RETURNING id',
-      [name, email, hashedPassword]
-    );
+        const salt = await bcrypt.genSalt(10);
+        const hashedPassword = await bcrypt.hash(password, salt);
 
-    // Crear cuenta por defecto
-    const accountNumber = Math.floor(Math.random() * 9000000000) + 1000000000;
-    await pool.query('INSERT INTO accounts (user_id, account_number, balance) VALUES ($1, $2, $3)', [result[0].id, accountNumber.toString(), 0]);
+        const totalUsers = await User.count();
+        const role = totalUsers === 0 ? 'admin' : 'user';
 
-    res.status(201).json({ message: 'Usuario registrado exitosamente' });
-  } catch (error) {
-    console.error('Error en registro:', error);
-    res.status(500).json({ message: 'Error en registro: ' + error.message });
-  }
+        const newUser = await User.create(full_name, email, hashedPassword, role);
+
+        // Account Numbers
+        const savingsNumber = 'SAV-' + Math.floor(Math.random() * 1000000);
+        const checkingNumber = 'CHK-' + Math.floor(Math.random() * 1000000);
+
+        // Initial balance
+        await Account.create(newUser.id, savingsNumber, 10000.00);
+        await Account.create(newUser.id, checkingNumber, 0);
+
+        sendConfirmationEmail(email, full_name).catch(console.error);
+
+        res.status(201).json({
+            message: 'Usuario registrado con éxito',
+            user: newUser,
+            accounts: [savingsNumber, checkingNumber]
+        });
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
 };
 
-const login = async (req, res) => {
-  const { email, password } = req.body;
-  try {
-    const { rows: users } = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
-    const user = users[0];
+exports.login = async (req, res) => {
+    const { email, password } = req.body;
 
-    if (!user) {
-      return res.status(401).json({ message: 'El usuario no existe' });
+    try {
+        const user = await User.findByEmail(email);
+        if (!user) {
+            return res.status(401).json({ message: 'Credenciales inválidas' });
+        }
+
+        const isMatch = await bcrypt.compare(password, user.password);
+        if (!isMatch) {
+            return res.status(401).json({ message: 'Credenciales inválidas' });
+        }
+
+        const token = jwt.sign(
+            { id: user.id, email: user.email, role: user.role },
+            process.env.JWT_SECRET || 'secret_sentendar',
+            { expiresIn: '24h' }
+        );
+
+        res.json({
+            token,
+            user: {
+                id: user.id,
+                full_name: user.full_name,
+                email: user.email,
+                role: user.role
+            }
+        });
+    } catch (err) {
+        res.status(500).json({ message: err.message });
     }
-
-    const isMatch = await bcrypt.compare(password, user.password_hash);
-    if (!isMatch) {
-      return res.status(401).json({ message: 'Contraseña incorrecta' });
-    }
-
-    const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET || 'supersecretjwtkey_12345', { expiresIn: '30d' });
-    
-    res.json({
-      id: user.id,
-      name: user.name,
-      email: user.email,
-      token
-    });
-  } catch (error) {
-    console.error('Error en login:', error);
-    res.status(500).json({ message: 'Error de conexión con la base de datos: ' + error.message });
-  }
 };
 
-module.exports = { register, login };
