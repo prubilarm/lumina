@@ -19,11 +19,21 @@ app.use(cors());
 app.use(express.json());
 
 // Diagnostic route
-app.get('/debug-db', (req, res) => {
+app.get('/debug-db', async (req, res) => {
+    const db = require('./config/db');
     const dbUrl = process.env.DATABASE_URL || 'NOT_FOUND';
     const maskedUrl = dbUrl.replace(/:([^@]+)@/, ':****@');
-    const host = dbUrl.split('@')[1] || 'NO_HOST';
-    res.json({ maskedUrl, host });
+    
+    let testResult = { success: false, error: 'DB instance not initialized' };
+    if (db && db.testConnection) {
+        testResult = await db.testConnection();
+    }
+    
+    res.json({ 
+        maskedUrl, 
+        host: dbUrl.split('@')[1] || 'NO_HOST',
+        testResult 
+    });
 });
 
 // Swagger Configuration

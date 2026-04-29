@@ -29,15 +29,29 @@ if (process.env.DATABASE_URL) {
 
         const pool = new Pool(config);
         
+        // Test connection immediately to catch errors
+        pool.on('error', (err) => {
+            console.error('❌ Error inesperado en el pool de BD:', err.message);
+        });
+
         dbInstance = {
             query: (text, params) => pool.query(text, params),
-            pool
+            pool,
+            testConnection: async () => {
+                const client = await pool.connect();
+                try {
+                    const res = await client.query('SELECT NOW()');
+                    return { success: true, time: res.rows[0].now };
+                } catch (e) {
+                    return { success: false, error: e.message };
+                } finally {
+                    client.release();
+                }
+            }
         };
-        console.log('✅ Conexión a base de datos configurada por parámetros.');
+        console.log('✅ Conexión a base de datos configurada.');
     } catch (e) {
-        // Si falla el parseo (por los caracteres especiales), lo hacemos a la antigua con el string
-        // pero limpiando el string primero.
-        console.warn('⚠️ Error al parsear URL de BD, usando fallback de conexión directa.');
+        console.warn('⚠️ Error crítico de configuración de BD:', e.message);
         const pool = new Pool({
             connectionString: dbUrl,
             ssl: { rejectUnauthorized: false }
