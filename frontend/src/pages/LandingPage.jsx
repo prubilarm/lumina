@@ -29,7 +29,7 @@ const LandingPage = () => {
         {
             image: "/banking_modern_banner_1777215389973.png",
             title: "Nueva Cuenta Corriente Digital",
-            subtitle: "La evolución de tu dinero comienza aquí con Sentendar.",
+            subtitle: "La evolución de tu dinero comienza aquí con Lumina Bank.",
             cta: "Hazte Cliente",
             color: "from-blue-900/80 to-transparent"
         },
@@ -75,7 +75,7 @@ const LandingPage = () => {
                             <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center shadow-lg">
                                 <Landmark className="w-6 h-6 text-[#002A8D]" />
                             </div>
-                            <span className="font-black text-2xl tracking-tighter text-white">Sentendar<span className="text-blue-400">.</span></span>
+                            <span className="font-black text-2xl tracking-tighter text-white">Lumina Bank<span className="text-blue-400">.</span></span>
                         </div>
                         
                         <div className="hidden lg:flex h-full items-center gap-8 text-[13px] font-bold text-white/90">
@@ -155,7 +155,7 @@ const LandingPage = () => {
                     <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
                         <HighlightCard icon={<CreditCard className="text-blue-600"/>} title="Tarjetas Platinum" desc="Beneficios exclusivos en viajes y gastronomía." />
                         <HighlightCard icon={<Smartphone className="text-blue-600"/>} title="Paga con el Celular" desc="Configura Apple Pay o Google Pay hoy mismo." />
-                        <HighlightCard icon={<Globe className="text-blue-600"/>} title="Giros al Extranjero" desc="La red global de Sentendar a tu disposición." />
+                        <HighlightCard icon={<Globe className="text-blue-600"/>} title="Giros al Extranjero" desc="La red global de Lumina Bank a tu disposición." />
                         <HighlightCard icon={<Shield className="text-blue-600"/>} title="Seguridad 24/7" desc="Monitoreo activo de todas tus operaciones." />
                     </div>
                 </div>
@@ -171,12 +171,12 @@ const LandingPage = () => {
                         </p>
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
                             <FeatureBenefit title="Costo Cero" desc="Abre tu cuenta digital sin costos de mantención por 12 meses." />
-                            <FeatureBenefit title="Puntos Sentendar" desc="Acumula puntos en todas tus compras y canjéalos por viajes." />
+                            <FeatureBenefit title="Puntos Lumina Bank" desc="Acumula puntos en todas tus compras y canjéalos por viajes." />
                             <FeatureBenefit title="Asistencia VIP" desc="Ejecutivo dedicado para clientes Platinum y World." />
                             <FeatureBenefit title="Inversiones" desc="Acceso directo a Fondos Mutuos y Acciones Globales." />
                         </div>
                         <button className="flex items-center gap-3 text-blue-600 font-black text-sm uppercase tracking-widest hover:gap-5 transition-all">
-                            Conocer más sobre Sentendar <ArrowRight size={20}/>
+                            Conocer más sobre Lumina Bank <ArrowRight size={20}/>
                         </button>
                     </div>
                     <div className="flex-1 order-1 md:order-2">
@@ -199,7 +199,7 @@ const LandingPage = () => {
                         <div className="space-y-6">
                             <div className="flex items-center gap-3">
                                 <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center text-[#002A8D] font-black text-lg">S</div>
-                                <span className="font-black text-2xl tracking-tighter">Sentendar.</span>
+                                <span className="font-black text-2xl tracking-tighter">Lumina Bank.</span>
                             </div>
                             <p className="text-blue-200/60 text-sm leading-relaxed">
                                 Institución financiera líder en transformación digital. Casa Matriz: Av. Apoquindo 4200, Las Condes, Santiago.
@@ -213,7 +213,7 @@ const LandingPage = () => {
                         
                         <FooterLinks title="Productos" links={["Cuentas", "Tarjetas", "Inversiones", "Créditos"]} />
                         <FooterLinks title="Atención" links={["Preguntas Frecuentes", "Sucursales", "Emergencias Bancarias", "Contacto"]} />
-                        <FooterLinks title="Sentendar Corp" links={["Sobre Nosotros", "Sostenibilidad", "Trabaja con Nosotros", "Prensa"]} />
+                        <FooterLinks title="Lumina Bank Corp" links={["Sobre Nosotros", "Sostenibilidad", "Trabaja con Nosotros", "Prensa"]} />
                     </div>
                     
                     <div className="pt-12 border-t border-white/10 flex flex-col md:flex-row justify-between items-center gap-6 text-[10px] font-bold text-blue-300/50 uppercase tracking-widest">
@@ -222,7 +222,7 @@ const LandingPage = () => {
                             <span>Privacidad</span>
                             <span>Seguridad</span>
                         </div>
-                        <p>© 2024 Sentendar Chile. Todos los derechos reservados.</p>
+                        <p>© 2024 Lumina Bank Chile. Todos los derechos reservados.</p>
                     </div>
                 </div>
             </footer>

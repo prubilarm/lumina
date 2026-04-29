@@ -5,42 +5,42 @@ services:
     build:
       context: ./backend
       dockerfile: Dockerfile
-    container_name: sentendar_backend
+    container_name: Lumina Bank_backend
     ports:
       - "5000:5000"
     environment:
       - PORT=5000
-      - DATABASE_URL=postgres://sentendar_user:sentendar_pass@db:5432/sentendar_db
-      - JWT_SECRET=secret_sentendar_key_2024
+      - DATABASE_URL=postgres://Lumina Bank_user:Lumina Bank_pass@db:5432/Lumina Bank_db
+      - JWT_SECRET=secret_Lumina Bank_key_2024
     depends_on:
       db:
         condition: service_healthy
     networks:
-      - sentendar_network
+      - Lumina Bank_network
 
   db:
     image: postgres:15-alpine
-    container_name: sentendar_db
+    container_name: Lumina Bank_db
     restart: always
     environment:
-      POSTGRES_USER: sentendar_user
-      POSTGRES_PASSWORD: sentendar_pass
-      POSTGRES_DB: sentendar_db
+      POSTGRES_USER: Lumina Bank_user
+      POSTGRES_PASSWORD: Lumina Bank_pass
+      POSTGRES_DB: Lumina Bank_db
     ports:
       - "5432:5432"
     volumes:
       - db_data:/var/lib/postgresql/data
       - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U sentendar_user -d sentendar_db"]
+      test: ["CMD-SHELL", "pg_isready -U Lumina Bank_user -d Lumina Bank_db"]
       interval: 10s
       timeout: 5s
       retries: 5
     networks:
-      - sentendar_network
+      - Lumina Bank_network
 
 networks:
-  sentendar_network:
+  Lumina Bank_network:
     driver: bridge
 
 volumes:

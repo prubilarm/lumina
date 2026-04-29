@@ -17,18 +17,18 @@ const sendConfirmationEmail = async (email, fullName) => {
         });
 
         const mailOptions = {
-            from: '"Sentendar Banking" <no-reply@sentendar.com>',
+            from: '"Lumina Bank Banking" <no-reply@lumina.com>',
             to: email,
-            subject: '¡Bienvenido a Sentendar! - Confirmación de Cuenta',
+            subject: '¡Bienvenido a Lumina Bank! - Confirmación de Cuenta',
             html: `
                 <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 10px;">
                     <div style="text-align: center; margin-bottom: 30px;">
-                        <h1 style="color: #6366f1; margin: 0;">Sentendar</h1>
+                        <h1 style="color: #6366f1; margin: 0;">Lumina Bank</h1>
                         <p style="color: #666; font-size: 14px;">Banca Digital de Próxima Generación</p>
                     </div>
                     <h2 style="color: #333;">Hola, ${fullName} 👋</h2>
                     <p style="color: #555; line-height: 1.6;">
-                        Tu cuenta en <strong>Sentendar</strong> ha sido creada exitosamente. Estamos emocionados de tenerte con nosotros.
+                        Tu cuenta en <strong>Lumina Bank</strong> ha sido creada exitosamente. Estamos emocionados de tenerte con nosotros.
                     </p>
                     <div style="background-color: #f8fafc; padding: 20px; border-radius: 8px; margin: 25px 0;">
                         <p style="margin: 0; color: #475569; font-size: 14px;">

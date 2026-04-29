@@ -1,7 +1,7 @@
 {
-  "name": "sentendar-backend",
+  "name": "Lumina Bank-backend",
   "version": "1.0.0",
-  "description": "API for Sentendar Online Banking System",
+  "description": "API for Lumina Bank Online Banking System",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",

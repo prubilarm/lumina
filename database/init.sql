@@ -1,4 +1,4 @@
--- Sentendar Online Banking Database Schema
+-- Lumina Bank Online Banking Database Schema
 
 -- Users Table
 CREATE TABLE IF NOT EXISTS users (
@@ -32,4 +32,4 @@ CREATE TABLE IF NOT EXISTS transactions (
 );
 
 -- Initial Admin (optional, password should be hashed in code)
--- INSERT INTO users (full_name, email, password, role) VALUES ('Admin Sentendar', 'admin@sentendar.com', 'hashed_pw', 'admin');
+-- INSERT INTO users (full_name, email, password, role) VALUES ('Admin Lumina Bank', 'admin@Lumina Bank.com', 'hashed_pw', 'admin');

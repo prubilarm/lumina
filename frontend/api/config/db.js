@@ -20,7 +20,7 @@ if (connectionString) {
     
     const storage = {
         users: [
-            { id: 1, full_name: 'Administrador Sentendar', email: 'admin@sentendar.com', password: '$2a$10$6yLT4OUbUQruVZHb0nogtus6Q2zVijbdsSDd3pQw5g77xo837ZHe2', role: 'admin', created_at: new Date() },
+            { id: 1, full_name: 'Administrador Lumina Bank', email: 'admin@lumina.com', password: '$2a$10$6yLT4OUbUQruVZHb0nogtus6Q2zVijbdsSDd3pQw5g77xo837ZHe2', role: 'admin', created_at: new Date() },
             { id: 2, full_name: 'Pablo Ramirez', email: 'pablo@test.com', password: '$2a$10$6yLT4OUbUQruVZHb0nogtus6Q2zVijbdsSDd3pQw5g77xo837ZHe2', role: 'user', created_at: new Date() }
         ],
         accounts: [

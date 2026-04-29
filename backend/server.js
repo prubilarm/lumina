@@ -23,9 +23,9 @@ const swaggerOptions = {
     definition: {
         openapi: '3.0.0',
         info: {
-            title: 'Sentendar Online Banking API',
+            title: 'Lumina Bank Online Banking API',
             version: '1.0.0',
-            description: 'Professional API for Sentendar Banking System',
+            description: 'Professional API for Lumina Bank Banking System',
         },
         servers: [
             {
@@ -51,7 +51,7 @@ app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocs));
 
 // Root Endpoint
 app.get('/', (req, res) => {
-    res.json({ message: 'Welcome to Sentendar API', docs: '/api-docs' });
+    res.json({ message: 'Welcome to Lumina Bank API', docs: '/api-docs' });
 });
 
 // Routes

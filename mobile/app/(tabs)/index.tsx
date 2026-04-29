@@ -68,7 +68,7 @@ export default function DashboardScreen() {
                 <View style={styles.header}>
                     <View>
                         <Text style={styles.greeting}>Hola de nuevo,</Text>
-                        <Text style={styles.userName}>Bienvenido a Sentendar</Text>
+                        <Text style={styles.userName}>Bienvenido a Lumina Bank</Text>
                     </View>
                     <View style={styles.headerIcons}>
                         <TouchableOpacity style={styles.iconButton} onPress={handleLogout}>

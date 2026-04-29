@@ -37,7 +37,7 @@ export default function DepositScreen() {
         setLoading(true);
         try {
             // In a real banking app, this would involve a gateway or check scan
-            // For Sentendar, we'll use a simulation endpoint or transfer to self
+            // For Lumina Bank, we'll use a simulation endpoint or transfer to self
             await api.post('/transactions/transfer', {
                 amount: parseFloat(amount),
                 receiver_account_number: selectedAccount,

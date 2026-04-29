@@ -36,7 +36,7 @@ const Register = () => {
           <div className="inline-flex items-center justify-center w-16 h-16 bg-emerald-600 rounded-2xl mb-6 shadow-xl shadow-emerald-500/20">
             <Wallet className="text-white w-8 h-8" />
           </div>
-          <h1 className="text-4xl font-extrabold text-white mb-2">Únete a Sentendar</h1>
+          <h1 className="text-4xl font-extrabold text-white mb-2">Únete a Lumina Bank</h1>
           <p className="text-slate-400">Abre tu cuenta global en cuestión de minutos</p>
         </div>
 

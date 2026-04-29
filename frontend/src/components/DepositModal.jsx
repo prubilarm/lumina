@@ -94,7 +94,7 @@ const DepositModal = ({ isOpen, onClose, onSuccess, accounts }) => {
                                 <div className="p-4 bg-indigo-500/5 rounded-2xl border border-indigo-500/10 flex gap-4 items-center">
                                     <ShieldCheck size={20} className="text-indigo-400 shrink-0" />
                                     <p className="text-[10px] text-slate-400 font-bold leading-relaxed">
-                                        Toda operación de abono es procesada mediante canales cifrados de Sentendar Bank bajo protocolo HTTPS.
+                                        Toda operación de abono es procesada mediante canales cifrados de Lumina Bank Bank bajo protocolo HTTPS.
                                     </p>
                                 </div>
 

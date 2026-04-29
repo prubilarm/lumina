@@ -68,7 +68,7 @@ exports.transfer = async (req, res) => {
         await Account.updateBalance(receiverAccount.id, amount, 'addition');
 
         // Log transaction
-        await Transaction.create(senderAccount.id, receiverAccount.id, 'transfer', amount, description || 'Transferencia Sentendar');
+        await Transaction.create(senderAccount.id, receiverAccount.id, 'transfer', amount, description || 'Transferencia Lumina Bank');
 
         res.json({ message: 'Transferencia realizada con éxito' });
     } catch (err) {

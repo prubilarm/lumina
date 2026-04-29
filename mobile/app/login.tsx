@@ -43,7 +43,7 @@ export default function LoginScreen() {
             <View style={styles.logoContainer}>
                 <ShieldCheck color="#fff" size={40} />
             </View>
-            <Text style={styles.title}>Sentendar</Text>
+            <Text style={styles.title}>Lumina Bank</Text>
             <Text style={styles.subtitle}>Banca Móvil Segura</Text>
         </View>
 

@@ -36,7 +36,7 @@ const Login = () => {
             <ShieldCheck className="text-white w-8 h-8" />
           </div>
           <h1 className="text-4xl font-extrabold text-white mb-2">Bienvenido</h1>
-          <p className="text-slate-400">Introduce tus credenciales para acceder a Sentendar</p>
+          <p className="text-slate-400">Introduce tus credenciales para acceder a Lumina Bank</p>
         </div>
 
         <div className="glass p-8 shadow-2xl relative z-10">

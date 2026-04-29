@@ -1,11 +1,11 @@
 {
   "expo": {
-    "name": "Sentendar Mobile",
-    "slug": "sentendar-mobile",
+    "name": "Lumina Bank Mobile",
+    "slug": "Lumina Bank-mobile",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "sentendar",
+    "scheme": "Lumina Bank",
     "userInterfaceStyle": "dark",
     "newArchEnabled": false,
     "splash": {
@@ -21,7 +21,7 @@
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#0f172a"
       },
-      "package": "com.sentendar.mobile"
+      "package": "com.Lumina Bank.mobile"
     },
     "web": {
       "bundler": "metro",
@@ -44,7 +44,7 @@
       "typedRoutes": true
     },
     "extra": {
-      "apiUrl": "https://sentendar-bank.vercel.app/api",
+      "apiUrl": "https://Lumina Bank-bank.vercel.app/api",
       "eas": {
         "projectId": "2e11a119-a09f-4895-9a40-82181d015a31"
       }

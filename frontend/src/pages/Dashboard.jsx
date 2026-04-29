@@ -53,7 +53,7 @@ const Dashboard = () => {
     }, []);
 
     const handleAction = (feature) => {
-        alert(`${feature}: Módulo en mantenimiento preventivo por actualización de sistemas Sentendar.`);
+        alert(`${feature}: Módulo en mantenimiento preventivo por actualización de sistemas Lumina Bank.`);
     };
 
     const handleDownloadStatement = async () => {
@@ -80,7 +80,7 @@ const Dashboard = () => {
                     <div className="w-10 h-10 bg-gradient-to-tr from-indigo-600 to-indigo-400 rounded-[14px] flex items-center justify-center text-white shadow-lg shadow-indigo-500/20">
                         <ShieldCheck size={24} strokeWidth={2.5} />
                     </div>
-                    <span className="font-black text-2xl tracking-tighter">Sentendar<span className="text-indigo-500">.</span></span>
+                    <span className="font-black text-2xl tracking-tighter">Lumina Bank<span className="text-indigo-500">.</span></span>
                 </div>
                 
                 <nav className="flex-1 space-y-3">
@@ -163,7 +163,7 @@ const Dashboard = () => {
                                             <div className="flex justify-between items-start mb-12">
                                                 <div className="space-y-1">
                                                     <p className="text-[10px] font-black text-white/40 uppercase tracking-widest">Visa Platinum</p>
-                                                    <p className="font-bold text-sm tracking-tight text-white/90">Sentendar Bank</p>
+                                                    <p className="font-bold text-sm tracking-tight text-white/90">Lumina Bank Bank</p>
                                                 </div>
                                                 <div className="w-12 h-9 bg-yellow-400/80 rounded-lg shadow-inner flex items-center justify-center opacity-70">
                                                     <div className="w-8 h-6 border-[1px] border-black/10 rounded"></div>

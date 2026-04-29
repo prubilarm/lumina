@@ -1,6 +1,6 @@
-# Sentendar - Online Banking System (Banca en Línea)
+# Lumina Bank - Online Banking System (Banca en Línea)
 
-Sentendar es una plataforma bancaria de grado fin-tech completa, diseñada para ser segura, escalable y con una experiencia de usuario premium.
+Lumina Bank es una plataforma bancaria de grado fin-tech completa, diseñada para ser segura, escalable y con una experiencia de usuario premium.
 
 ## 🚀 Características Principales
 
@@ -83,4 +83,4 @@ Al registrarte, revisa la consola (terminal) del **backend**. Verás un enlace d
 
 ---
 
-Desarrollado por el equipo de arquitectura senior de Sentendar.
+Desarrollado por el equipo de arquitectura senior de Lumina Bank.

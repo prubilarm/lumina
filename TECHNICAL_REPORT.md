@@ -1,6 +1,6 @@
-# Sentendar Online Banking - Reporte Técnico de Arquitectura
+# Lumina Bank Online Banking - Reporte Técnico de Arquitectura
 
-Este documento detalla la implementación técnica, arquitectura y medidas de seguridad del sistema bancario **Sentendar**, diseñado para cumplir con los más altos estándares de escalabilidad y seguridad requeridos para la Evaluación Sumativa 2.
+Este documento detalla la implementación técnica, arquitectura y medidas de seguridad del sistema bancario **Lumina Bank**, diseñado para cumplir con los más altos estándares de escalabilidad y seguridad requeridos para la Evaluación Sumativa 2.
 
 ## 1. Arquitectura del Sistema
 

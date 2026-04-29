@@ -57,7 +57,7 @@ exports.login = async (req, res) => {
 
         const token = jwt.sign(
             { id: user.id, email: user.email, role: user.role },
-            process.env.JWT_SECRET || 'secret_sentendar',
+            process.env.JWT_SECRET || 'secret_Lumina Bank',
             { expiresIn: '24h' }
         );
 

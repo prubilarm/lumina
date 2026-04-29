@@ -1,8 +1,8 @@
 {
 	"info": {
-		"_postman_id": "sentendar-api-v1",
-		"name": "Sentendar Banking API",
-		"description": "API collection for Sentendar Online Banking System",
+		"_postman_id": "Lumina Bank-api-v1",
+		"name": "Lumina Bank Banking API",
+		"description": "API collection for Lumina Bank Online Banking System",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
 	"item": [

@@ -9,7 +9,7 @@ const verifyToken = (req, res, next) => {
     }
 
     try {
-        const decoded = jwt.verify(token, process.env.JWT_SECRET || 'sentendar_premium_secret_key_2024');
+        const decoded = jwt.verify(token, process.env.JWT_SECRET || 'Lumina Bank_premium_secret_key_2024');
         req.user = decoded;
         next();
     } catch (err) {
