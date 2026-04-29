@@ -6,18 +6,34 @@ let dbInstance;
 if (process.env.DATABASE_URL) {
     let connectionString = process.env.DATABASE_URL;
     
-    // Fix for passwords with special characters (#, $) that break the URL
-    if (connectionString.includes('#') || connectionString.includes('$')) {
-        try {
-            const url = new URL(connectionString);
-            if (url.password) {
-                url.password = encodeURIComponent(url.password);
-                connectionString = url.toString();
+    // Robust manual fix for passwords with # or $ that break URL parsing
+    try {
+        if (connectionString.includes('#') || connectionString.includes('$')) {
+            // Find the @ that separates credentials from host
+            const lastAtIndex = connectionString.lastIndexOf('@');
+            if (lastAtIndex !== -1) {
+                const credsAndProtocol = connectionString.substring(0, lastAtIndex);
+                const hostPart = connectionString.substring(lastAtIndex); // includes @
+                
+                // Find the : that separates protocol/user from password
+                const protocolEndIndex = credsAndProtocol.indexOf('://');
+                if (protocolEndIndex !== -1) {
+                    const protocol = credsAndProtocol.substring(0, protocolEndIndex + 3);
+                    const userPass = credsAndProtocol.substring(protocolEndIndex + 3);
+                    
+                    const colonIndex = userPass.indexOf(':');
+                    if (colonIndex !== -1) {
+                        const user = userPass.substring(0, colonIndex);
+                        const password = userPass.substring(colonIndex + 1);
+                        
+                        // Encode ONLY the password part
+                        connectionString = `${protocol}${user}:${encodeURIComponent(password)}${hostPart}`;
+                    }
+                }
             }
-        } catch (e) {
-            // If URL parsing fails, we leave it as is or try a manual replace for the most common culprit (#)
-            connectionString = connectionString.replace(/#(?![0-9a-fA-F]{3,6})/g, '%23');
         }
+    } catch (e) {
+        console.error('Error fixing DATABASE_URL:', e.message);
     }
 
     const pool = new Pool({
