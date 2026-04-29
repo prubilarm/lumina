@@ -18,6 +18,14 @@ const PORT = process.env.PORT || 5000;
 app.use(cors());
 app.use(express.json());
 
+// Diagnostic route
+app.get('/debug-db', (req, res) => {
+    const dbUrl = process.env.DATABASE_URL || 'NOT_FOUND';
+    const maskedUrl = dbUrl.replace(/:([^@]+)@/, ':****@');
+    const host = dbUrl.split('@')[1] || 'NO_HOST';
+    res.json({ maskedUrl, host });
+});
+
 // Swagger Configuration
 const swaggerOptions = {
     definition: {
