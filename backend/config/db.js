@@ -4,8 +4,24 @@ require('dotenv').config();
 let dbInstance;
 
 if (process.env.DATABASE_URL) {
+    let connectionString = process.env.DATABASE_URL;
+    
+    // Fix for passwords with special characters (#, $) that break the URL
+    if (connectionString.includes('#') || connectionString.includes('$')) {
+        try {
+            const url = new URL(connectionString);
+            if (url.password) {
+                url.password = encodeURIComponent(url.password);
+                connectionString = url.toString();
+            }
+        } catch (e) {
+            // If URL parsing fails, we leave it as is or try a manual replace for the most common culprit (#)
+            connectionString = connectionString.replace(/#(?![0-9a-fA-F]{3,6})/g, '%23');
+        }
+    }
+
     const pool = new Pool({
-        connectionString: process.env.DATABASE_URL,
+        connectionString: connectionString,
         ssl: { rejectUnauthorized: false }
     });
     dbInstance = {
