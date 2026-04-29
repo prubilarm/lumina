@@ -4,8 +4,13 @@ require('dotenv').config();
 let dbInstance;
 
 if (process.env.DATABASE_URL) {
-    // Configuración robusta por objetos para evitar errores de URL
-    const dbUrl = process.env.DATABASE_URL.trim();
+    // Limpieza profunda y forzada de caracteres especiales
+    let dbUrl = process.env.DATABASE_URL.trim();
+    
+    // El símbolo # es el principal culpable del error "Invalid URL"
+    if (dbUrl.includes('#')) {
+        dbUrl = dbUrl.replace(/#/g, '%23');
+    }
     
     try {
         // Intentamos extraer los datos de la URL para usarlos en el objeto Pool
