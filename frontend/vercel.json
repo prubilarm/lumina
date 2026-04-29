@@ -1,7 +1,7 @@
 {
   "version": 2,
   "rewrites": [
-    { "source": "/api/(.*)", "destination": "https://lumina-api-ebon.vercel.app/$1" },
+    { "source": "/api/:path*", "destination": "https://lumina-api-ebon.vercel.app/:path*" },
     { "source": "/(.*)", "destination": "/index.html" }
   ]
 }
