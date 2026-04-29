@@ -13,7 +13,11 @@ import {
   ArrowUpRight,
   ArrowDownLeft,
   Calendar,
-  Layout
+  Zap,
+  Terminal,
+  ShieldCheck,
+  Lock,
+  ChevronRight
 } from 'lucide-react';
 import api from '../utils/api';
 import UserDetailModal from '../components/UserDetailModal';
@@ -37,7 +41,7 @@ const AdminPanel = () => {
             setUsers(usersRes.data);
             setTransactions(txsRes.data);
         } catch (err) {
-            setError('No tienes permisos suficientes para ver esta área.');
+            setError('Acceso denegado: Protocolo de seguridad Lumina-Admin no superado.');
             setTimeout(() => navigate('/dashboard'), 3000);
         } finally {
             setLoading(false);
@@ -53,117 +57,116 @@ const AdminPanel = () => {
 
     if (error) {
         return (
-            <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center p-8">
-                <ShieldAlert className="text-red-500 mb-6" size={64} />
-                <h2 className="text-2xl font-bold mb-4">{error}</h2>
-                <p className="text-slate-400">Redirigiendo al dashboard...</p>
+            <div className="min-h-screen bg-[#020408] flex flex-col items-center justify-center p-8">
+                <div className="w-20 h-20 bg-red-500/10 rounded-full flex items-center justify-center text-red-500 mb-8 border border-red-500/20 animate-pulse">
+                    <Lock size={40} />
+                </div>
+                <h2 className="text-3xl font-black mb-4 text-white tracking-tighter">{error}</h2>
+                <p className="text-slate-500 font-bold uppercase text-[10px] tracking-widest">Reconectando con el terminal de usuario...</p>
             </div>
         );
     }
 
     return (
-        <div className="min-h-screen bg-slate-950 text-white font-sans selection:bg-indigo-500/30">
-            {/* Background Decorations */}
-            <div className="fixed top-0 left-0 w-full h-[600px] bg-indigo-600/5 blur-[120px] rounded-full -translate-y-1/2 pointer-events-none"></div>
+        <div className="min-h-screen bg-[#020408] text-slate-100 font-sans selection:bg-purple-500/30 overflow-x-hidden">
+            <div className="fixed top-0 right-0 w-[800px] h-[800px] bg-purple-600/5 blur-[150px] rounded-full -translate-y-1/2 translate-x-1/4 pointer-events-none"></div>
+            <div className="fixed bottom-0 left-0 w-[600px] h-[600px] bg-cyan-600/5 blur-[150px] rounded-full translate-y-1/2 -translate-x-1/4 pointer-events-none"></div>
 
-            <div className="relative max-w-7xl mx-auto p-8">
-                {/* Header */}
-                <header className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-12">
-                    <div className="flex items-center gap-4">
+            <div className="relative max-w-7xl mx-auto p-10">
+                <header className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-10 mb-16">
+                    <div className="flex items-center gap-6">
                         <button 
                             onClick={() => navigate('/dashboard')}
-                            className="w-12 h-12 glass rounded-2xl flex items-center justify-center hover:bg-white/10 transition-all active:scale-95 group"
+                            className="w-14 h-14 bg-white/5 border border-white/5 rounded-2xl flex items-center justify-center hover:bg-white/10 transition-all active:scale-95 group"
                         >
-                            <ArrowLeft size={22} className="group-hover:-translate-x-1 transition-transform" />
+                            <ArrowLeft size={24} className="group-hover:-translate-x-1 transition-transform" />
                         </button>
                         <div>
-                            <div className="flex items-center gap-2 mb-1">
-                                <ShieldAlert size={16} className="text-indigo-400" />
-                                <span className="text-[10px] font-black uppercase tracking-[0.2em] text-indigo-400">Security & Analytics Console</span>
+                            <div className="flex items-center gap-3 mb-2">
+                                <Terminal size={14} className="text-purple-400" />
+                                <span className="text-[10px] font-black uppercase tracking-[0.4em] text-purple-400">Lumina Mainframe v2.0</span>
                             </div>
-                            <h1 className="text-4xl font-black tracking-tighter">Panel de Auditoría</h1>
+                            <h1 className="text-5xl font-black tracking-tighter">Terminal Auditor</h1>
                         </div>
                     </div>
                     
-                    <div className="flex items-center gap-3 bg-white/5 p-1.5 rounded-2xl border border-white/10">
-                        <TabBtn active={activeTab === 'users'} onClick={() => setActiveTab('users')} icon={<Users size={18}/>} label="Usuarios" />
-                        <TabBtn active={activeTab === 'audit'} onClick={() => setActiveTab('audit')} icon={<Activity size={18}/>} label="Auditoría Gral." />
+                    <div className="flex items-center gap-4 p-2 bg-white/[0.02] border border-white/5 rounded-3xl backdrop-blur-xl">
+                        <TabBtn active={activeTab === 'users'} onClick={() => setActiveTab('users')} icon={<Users size={18}/>} label="Directorio" />
+                        <TabBtn active={activeTab === 'audit'} onClick={() => setActiveTab('audit')} icon={<Activity size={18}/>} label="Flujos P2P" />
                     </div>
                 </header>
 
-                {/* Main Content Areas */}
-                {activeTab === 'users' ? (
-                    <div className="space-y-12">
-                        {/* Summary Cards */}
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                            <StatCard label="Usuarios Activos" value={users.length} icon={<Users />} trend="+4.2%" />
-                            <StatCard label="Fondos en Custodia" value={`$${totalFunds.toLocaleString()}`} icon={<TrendingUp />} trend="+12.5%" highlight />
-                            <StatCard label="Volumen Semanal" value={`$${weeklyVolume.toLocaleString()}`} icon={<Activity />} trend="+8.1%" />
-                        </div>
+                <section className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16">
+                    <StatCard label="Usuarios en Red" value={users.length} icon={<Users />} trend="+4%" />
+                    <StatCard label="Custodia Total" value={`$${totalFunds.toLocaleString()}`} icon={<TrendingUp />} trend="+12%" highlight />
+                    <StatCard label="Volumen de Transacciones" value={`$${weeklyVolume.toLocaleString()}`} icon={<Activity />} trend="+8%" />
+                </section>
 
-                        {/* Users Table */}
-                        <div className="glass overflow-hidden bank-shadow">
-                            <div className="p-8 border-b border-white/5 flex justify-between items-center bg-white/[0.02]">
-                                <h3 className="font-bold flex items-center gap-3">
-                                    Control de Cuentas
-                                </h3>
-                                <div className="relative">
-                                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-600" size={16} />
+                {activeTab === 'users' ? (
+                    <div className="animate-in fade-in slide-in-from-bottom-4 duration-700">
+                        <div className="bg-[#05070A] border border-white/5 rounded-[3rem] overflow-hidden shadow-2xl relative">
+                            <div className="p-10 border-b border-white/5 flex flex-col md:flex-row justify-between items-center gap-8 bg-gradient-to-r from-purple-500/5 to-transparent">
+                                <div>
+                                    <h3 className="text-2xl font-black tracking-tighter mb-1">Registros de Ciudadanía</h3>
+                                    <p className="text-xs text-slate-500 font-bold uppercase tracking-widest">Control total sobre cuentas activas</p>
+                                </div>
+                                <div className="relative w-full md:w-96">
+                                    <Search className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-600" size={18} />
                                     <input 
                                         type="text" 
-                                        placeholder="Filtrar por nombre o email..." 
-                                        className="bg-slate-900 border border-white/10 rounded-xl py-2.5 pl-10 pr-4 text-xs focus:ring-2 focus:ring-indigo-500 outline-none transition-all w-72"
+                                        placeholder="Filtrar por nombre, email o ID..." 
+                                        className="w-full bg-white/5 border border-white/5 rounded-[1.5rem] py-4 pl-14 pr-6 text-sm focus:border-purple-500/50 outline-none transition-all"
                                     />
                                 </div>
                             </div>
                             
-                            <div className="overflow-x-auto no-scrollbar">
+                            <div className="overflow-x-auto">
                                 <table className="w-full text-left">
-                                    <thead className="bg-white/5 text-slate-500 text-[10px] uppercase font-black tracking-[0.2em]">
+                                    <thead className="bg-white/[0.02] text-slate-500 text-[10px] uppercase font-black tracking-[0.3em]">
                                         <tr>
-                                            <th className="px-8 py-6">Titular de Cuenta</th>
-                                            <th className="px-8 py-6">Correo Electrónico</th>
-                                            <th className="px-8 py-6 text-right">Saldo Total</th>
-                                            <th className="px-8 py-6 text-center">Nivel</th>
-                                            <th className="px-8 py-6 text-center">Estado</th>
-                                            <th className="px-8 py-6"></th>
+                                            <th className="px-10 py-6">Entidad</th>
+                                            <th className="px-10 py-6">Comunicación</th>
+                                            <th className="px-10 py-6 text-right">Liquidez</th>
+                                            <th className="px-10 py-6 text-center">Rango</th>
+                                            <th className="px-10 py-6 text-center">Estado de Nodo</th>
+                                            <th className="px-10 py-6"></th>
                                         </tr>
                                     </thead>
                                     <tbody className="divide-y divide-white/5">
                                         {users.map(u => (
-                                            <tr key={u.id} className="hover:bg-white/[0.03] transition-all group">
-                                                <td className="px-8 py-5 flex items-center gap-4">
-                                                    <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500/20 to-slate-800 flex items-center justify-center text-indigo-400 text-sm font-black border border-white/5">
+                                            <tr key={u.id} className="hover:bg-white/[0.02] transition-all group">
+                                                <td className="px-10 py-6 flex items-center gap-5">
+                                                    <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-purple-600/20 to-cyan-500/20 border border-white/10 flex items-center justify-center text-purple-400 font-black">
                                                         {u.full_name?.substring(0, 1)}
                                                     </div>
                                                     <div>
-                                                        <p className="font-bold text-sm leading-tight">{u.full_name}</p>
-                                                        <p className="text-[10px] text-slate-500 uppercase tracking-widest mt-0.5">ID: {u.id}</p>
+                                                        <p className="font-black text-sm group-hover:text-white transition-colors">{u.full_name}</p>
+                                                        <p className="text-[10px] text-slate-500 font-mono">UID: {u.id}</p>
                                                     </div>
                                                 </td>
-                                                <td className="px-8 py-5 text-xs text-slate-400 font-medium">{u.email}</td>
-                                                <td className="px-8 py-5 text-sm font-black text-right text-indigo-400">
+                                                <td className="px-10 py-6 text-xs text-slate-400 font-bold">{u.email}</td>
+                                                <td className="px-10 py-6 text-base font-black text-right text-cyan-400">
                                                     ${parseFloat(u.balance || 0).toLocaleString()}
                                                 </td>
-                                                <td className="px-8 py-5 text-center">
-                                                    <span className={`text-[9px] font-black px-2.5 py-1 rounded-md uppercase tracking-wider ${u.role === 'admin' ? 'bg-indigo-500/20 text-indigo-400 border border-indigo-500/30' : 'bg-slate-800/50 text-slate-500'}`}>
+                                                <td className="px-10 py-6 text-center">
+                                                    <span className={`text-[9px] font-black px-3 py-1.5 rounded-xl uppercase tracking-widest ${u.role === 'admin' ? 'bg-purple-500/20 text-purple-400 border border-purple-500/30 shadow-lg shadow-purple-500/10' : 'bg-slate-800/50 text-slate-500 border border-white/5'}`}>
                                                         {u.role}
                                                     </span>
                                                 </td>
-                                                <td className="px-8 py-5 text-center">
+                                                <td className="px-10 py-6 text-center">
                                                     <div className="flex justify-center">
-                                                        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[9px] font-black bg-emerald-500/5 text-emerald-400 uppercase border border-emerald-500/10">
-                                                            <div className="w-1 h-1 bg-emerald-400 rounded-full animate-pulse"></div>
-                                                            Activo
+                                                        <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-[9px] font-black bg-cyan-500/5 text-cyan-400 uppercase border border-cyan-400/20">
+                                                            <div className="w-1.5 h-1.5 bg-cyan-400 rounded-full animate-pulse shadow-[0_0_8px_rgba(34,211,238,0.5)]"></div>
+                                                            Online
                                                         </span>
                                                     </div>
                                                 </td>
-                                                <td className="px-8 py-5 text-right">
+                                                <td className="px-10 py-6 text-right">
                                                     <button 
                                                         onClick={() => setSelectedUserId(u.id)}
-                                                        className="flex items-center gap-2 ml-auto text-xs font-bold px-4 py-2 bg-white/5 hover:bg-white/10 rounded-xl border border-white/5 transition-all text-slate-300 hover:text-white"
+                                                        className="p-3 bg-white/5 hover:bg-purple-500/10 hover:text-purple-400 rounded-xl transition-all border border-white/5"
                                                     >
-                                                        <Eye size={14} /> Inspeccionar
+                                                        <Eye size={18} />
                                                     </button>
                                                 </td>
                                             </tr>
@@ -174,47 +177,43 @@ const AdminPanel = () => {
                         </div>
                     </div>
                 ) : (
-                    <div className="space-y-8">
-                        <div className="glass p-10 bg-gradient-to-br from-white/5 to-transparent">
-                            <div className="flex items-center justify-between mb-10">
+                    <div className="animate-in fade-in slide-in-from-bottom-4 duration-700">
+                        <div className="bg-[#05070A] p-12 border border-white/5 rounded-[3rem] shadow-2xl relative overflow-hidden">
+                            <div className="absolute top-0 right-0 w-64 h-64 bg-purple-500/5 blur-3xl"></div>
+                            <div className="flex flex-col md:flex-row items-center justify-between gap-8 mb-16 px-4">
                                 <div>
-                                    <h2 className="text-2xl font-black mb-2">Auditoría General de Transacciones</h2>
-                                    <p className="text-slate-400 text-sm">Flujo de capital en tiempo real a través de todos los usuarios.</p>
+                                    <h2 className="text-3xl font-black mb-3 tracking-tighter">Monitoreo de Capital Lumina</h2>
+                                    <p className="text-slate-500 font-bold uppercase text-[10px] tracking-widest">Flujo global de transacciones encriptadas</p>
                                 </div>
-                                <Activity className="text-indigo-500 animate-pulse" size={48} />
-                            </div>
-
-                            <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-12">
-                                <AuditStat label="Promedio Transacción" value="$420.00" />
-                                <AuditStat label="Alertas de Riesgo" value="0" success />
-                                <AuditStat label="Operaciones Hoy" value={transactions.length} />
-                                <AuditStat label="Tasa de Éxito" value="100%" success />
+                                <div className="flex gap-4">
+                                    <AuditStat label="Alertas de Seguridad" value="Limpio" success icon={<ShieldCheck size={14}/>} />
+                                    <AuditStat label="Integridad de Cadena" value="99.9%" success icon={<Zap size={14}/>} />
+                                </div>
                             </div>
 
                             <div className="space-y-4">
                                 {transactions.map(tx => (
-                                    <div key={tx.id} className="glass p-6 flex items-center justify-between hover:bg-white/[0.04] transition-all border border-white/5">
-                                        <div className="flex items-center gap-6">
-                                            <div className={`w-14 h-14 rounded-2xl flex items-center justify-center ${tx.type === 'deposit' ? 'bg-emerald-500/10 text-emerald-400' : 'bg-red-500/10 text-red-100'}`}>
-                                                {tx.type === 'deposit' ? <ArrowDownLeft size={24}/> : <ArrowUpRight size={24}/>}
+                                    <div key={tx.id} className="p-8 bg-white/[0.02] hover:bg-white/[0.04] rounded-[2.5rem] border border-white/5 flex items-center justify-between transition-all group">
+                                        <div className="flex items-center gap-8">
+                                            <div className={`w-16 h-16 rounded-[1.5rem] flex items-center justify-center ${tx.type === 'deposit' ? 'bg-cyan-500/10 text-cyan-400 shadow-lg shadow-cyan-500/5' : 'bg-purple-500/10 text-purple-400 shadow-lg shadow-purple-500/5'}`}>
+                                                {tx.type === 'deposit' ? <ArrowDownLeft size={28}/> : <ArrowUpRight size={28}/>}
                                             </div>
                                             <div>
-                                                <div className="flex items-center gap-2 mb-1">
-                                                    <p className="font-bold text-lg">{tx.description || (tx.type === 'deposit' ? 'Depósito Externo' : 'Transferencia')}</p>
-                                                    <span className="text-[10px] font-black px-2 py-0.5 rounded-full bg-slate-800 text-slate-500 uppercase">{tx.type}</span>
+                                                <div className="flex items-center gap-3 mb-2">
+                                                    <p className="font-black text-xl group-hover:text-white transition-colors">{tx.description || (tx.type === 'deposit' ? 'Abono Externo' : 'Transferencia P2P')}</p>
+                                                    <span className={`text-[8px] font-black px-2 py-0.5 rounded-lg uppercase tracking-widest ${tx.type === 'deposit' ? 'bg-cyan-500/10 text-cyan-400' : 'bg-purple-500/10 text-purple-400'}`}>{tx.type}</span>
                                                 </div>
-                                                <div className="flex items-center gap-3 text-slate-500 text-sm">
-                                                    <p className="flex items-center gap-1"><Users size={14}/> {tx.sender_name || 'System'} → {tx.receiver_name || 'N/A'}</p>
-                                                    <span>•</span>
-                                                    <p className="flex items-center gap-1"><Calendar size={14}/> {new Date(tx.created_at).toLocaleDateString()}</p>
+                                                <div className="flex items-center gap-5 text-slate-500 text-xs font-bold">
+                                                    <p className="flex items-center gap-2 opacity-80"><Users size={14}/> {tx.sender_name || 'Network'} <ChevronRight size={10} className="opacity-30"/> {tx.receiver_name || 'UID-Vault'}</p>
+                                                    <p className="flex items-center gap-2 opacity-80"><Calendar size={14}/> {new Date(tx.created_at).toLocaleDateString()}</p>
                                                 </div>
                                             </div>
                                         </div>
                                         <div className="text-right">
-                                            <p className={`text-2xl font-black ${tx.type === 'deposit' ? 'text-emerald-400' : 'text-white'}`}>
+                                            <p className={`text-3xl font-black ${tx.type === 'deposit' ? 'text-cyan-400' : 'text-slate-100'}`}>
                                                 {tx.type === 'deposit' ? '+' : '-'}${Math.abs(parseFloat(tx.amount)).toLocaleString()}
                                             </p>
-                                            <p className="text-xs font-bold text-slate-600 uppercase tracking-widest italic">Confidencial</p>
+                                            <p className="text-[10px] font-black text-slate-700 uppercase tracking-widest mt-2">Verified by Lumina-Core</p>
                                         </div>
                                     </div>
                                 ))}
@@ -224,20 +223,20 @@ const AdminPanel = () => {
                 )}
             </div>
 
-            {/* User Details Modal */}
             <UserDetailModal 
                 isOpen={!!selectedUserId} 
                 onClose={() => setSelectedUserId(null)} 
                 userId={selectedUserId}
             />
             
-            {/* FAB Float for Refresh */}
-            <button 
-                onClick={fetchAdminData}
-                className="fixed bottom-10 right-10 w-14 h-14 bg-indigo-600 rounded-2xl flex items-center justify-center shadow-2xl shadow-indigo-500/50 hover:bg-indigo-500 hover:rotate-180 transition-all active:scale-90 z-40 group"
-            >
-                <RefreshCw size={24} className={loading ? 'animate-spin' : ''} />
-            </button>
+            <div className="fixed bottom-12 right-12 flex flex-col gap-4 z-50">
+                <button 
+                    onClick={fetchAdminData}
+                    className="w-16 h-16 bg-gradient-to-br from-purple-600 to-cyan-600 rounded-3xl flex items-center justify-center shadow-2xl shadow-purple-600/30 hover:rotate-180 transition-all duration-700 active:scale-90 group"
+                >
+                    <RefreshCw size={24} className={`text-white ${loading ? 'animate-spin' : ''}`} />
+                </button>
+            </div>
         </div>
     );
 };
@@ -245,7 +244,7 @@ const AdminPanel = () => {
 const TabBtn = ({ active, onClick, icon, label }) => (
     <button 
         onClick={onClick}
-        className={`flex items-center gap-2 px-6 py-2.5 rounded-xl text-xs font-bold transition-all ${active ? 'bg-indigo-600 text-white shadow-lg' : 'text-slate-400 hover:text-white hover:bg-white/5'}`}
+        className={`flex items-center gap-3 px-8 py-3.5 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] transition-all duration-500 ${active ? 'bg-gradient-to-r from-purple-600 to-purple-800 text-white shadow-xl shadow-purple-600/20' : 'text-slate-500 hover:text-white hover:bg-white/5'}`}
     >
         {icon}
         {label}
@@ -253,24 +252,28 @@ const TabBtn = ({ active, onClick, icon, label }) => (
 );
 
 const StatCard = ({ label, value, icon, trend, highlight }) => (
-    <div className={`glass p-8 border-b-2 ${highlight ? 'border-indigo-500 shadow-indigo-500/10 shadow-2xl' : 'border-white/5'}`}>
-        <div className="flex justify-between items-start mb-6">
-            <div className={`p-3 rounded-2xl ${highlight ? 'bg-indigo-500 text-white' : 'bg-indigo-500/10 text-indigo-400'}`}>
+    <div className={`p-10 rounded-[3rem] bg-[#05070A] border relative overflow-hidden transition-all duration-700 group hover:-translate-y-2 ${highlight ? 'border-purple-500/30 shadow-2xl shadow-purple-500/10' : 'border-white/5 hover:border-white/10'}`}>
+        <div className="absolute top-0 right-0 w-32 h-32 bg-purple-500/5 blur-3xl"></div>
+        <div className="flex justify-between items-start mb-10">
+            <div className={`w-14 h-14 rounded-2xl flex items-center justify-center transition-all duration-500 ${highlight ? 'bg-purple-600 text-white shadow-xl shadow-purple-600/30 group-hover:scale-110' : 'bg-white/5 text-purple-400'}`}>
                 {icon}
             </div>
-            <span className={`text-[10px] font-black px-2 py-0.5 rounded-full ${trend.startsWith('+') ? 'bg-emerald-500/10 text-emerald-400' : 'bg-red-500/10 text-red-400'}`}>
+            <div className={`px-3 py-1.5 rounded-xl text-[9px] font-black tracking-widest ${trend.startsWith('+') ? 'bg-cyan-400/10 text-cyan-400' : 'bg-red-400/10 text-red-400'}`}>
                 {trend}
-            </span>
+            </div>
         </div>
-        <p className="text-4xl font-black mb-1.5 tracking-tighter">{value}</p>
-        <p className="text-[10px] font-black uppercase text-slate-500 tracking-[0.25em]">{label}</p>
+        <p className="text-5xl font-black mb-3 tracking-tighter text-white group-hover:text-purple-400 transition-colors">{value}</p>
+        <p className="text-[10px] font-black uppercase text-slate-500 tracking-[0.4em]">{label}</p>
     </div>
 );
 
-const AuditStat = ({ label, value, success }) => (
-    <div className="p-4 rounded-2xl bg-white/[0.03] border border-white/5">
-        <p className="text-[9px] font-black text-slate-600 uppercase tracking-widest mb-1.5">{label}</p>
-        <p className={`text-xl font-black ${success ? 'text-emerald-400' : 'text-slate-200'}`}>{value}</p>
+const AuditStat = ({ label, value, success, icon }) => (
+    <div className="px-6 py-4 rounded-2xl bg-white/[0.03] border border-white/5 flex flex-col gap-2">
+        <div className="flex items-center gap-2">
+            <span className="text-slate-600">{icon}</span>
+            <p className="text-[9px] font-black text-slate-600 uppercase tracking-widest leading-none">{label}</p>
+        </div>
+        <p className={`text-xl font-black leading-none ${success ? 'text-cyan-400' : 'text-slate-200'}`}>{value}</p>
     </div>
 );
 
