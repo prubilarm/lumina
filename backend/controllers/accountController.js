@@ -21,4 +21,3 @@ const getBalance = async (req, res) => {
 };
 
 module.exports = { getAccountByUserId, getBalance };
-
