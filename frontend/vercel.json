@@ -1,6 +1,6 @@
 {
   "version": 2,
   "rewrites": [
-    { "source": "/api/(.*)", "destination": "https://Lumina Bank-api.vercel.app/$1" }
+    { "source": "/api/(.*)", "destination": "https://lumina-api-ebon.vercel.app/$1" }
   ]
 }
