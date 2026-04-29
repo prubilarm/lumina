@@ -102,8 +102,8 @@ const Dashboard = () => {
                     <div className="bg-[#0A0C10] border border-cyan-500/30 px-8 py-4 rounded-2xl shadow-[0_0_40px_-10px_rgba(34,211,238,0.3)] flex items-center gap-4">
                         <Zap size={20} className="text-cyan-400 animate-pulse" />
                         <div>
-                            <p className="text-[10px] font-black uppercase tracking-widest text-cyan-400">Protocolo Lumina</p>
-                            <p className="text-sm font-bold text-white">Módulo <span className="uppercase">{featureName}</span> encriptándose...</p>
+                            <p className="text-[10px] font-black uppercase tracking-widest text-cyan-400">Notificación</p>
+                            <p className="text-sm font-bold text-white">Módulo de <span className="uppercase">{featureName}</span> disponible próximamente.</p>
                         </div>
                     </div>
                 </div>
@@ -161,6 +161,11 @@ const Dashboard = () => {
 
             {/* Main Content Area */}
             <main className="flex-1 flex flex-col overflow-y-auto relative no-scrollbar bg-[#020408]">
+                {/* Background Decor (Consistent with Login/Landing) */}
+                <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden">
+                    <div className="absolute top-[-10%] left-[-10%] w-[600px] h-[600px] bg-purple-600/5 blur-[120px] rounded-full"></div>
+                    <div className="absolute bottom-[-10%] right-[-10%] w-[600px] h-[600px] bg-cyan-600/5 blur-[120px] rounded-full"></div>
+                </div>
                 {/* Header Section */}
                 <header className="px-10 py-8 flex justify-between items-center sticky top-0 z-40 bg-[#020408]/60 backdrop-blur-xl">
                     <div className="flex flex-col">

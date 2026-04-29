@@ -21,89 +21,79 @@ const Register = () => {
       await api.post('/auth/register', formData);
       navigate('/login');
     } catch (err) {
-      setError(err.response?.data?.message || 'Error en la inicialización de identidad.');
+      setError(err.response?.data?.message || 'Error al procesar el registro. Intente nuevamente.');
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-[#020408] flex items-center justify-center p-8 relative overflow-hidden font-sans">
-      {/* Cinematic Professional Background */}
+    <div className="min-h-screen bg-[#020408] flex items-center justify-center p-6 relative overflow-hidden font-sans">
+      {/* Premium Background (Consistent with Landing) */}
       <div className="absolute inset-0 z-0">
-        <img 
-          src="https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&q=80&w=2000" 
-          className="w-full h-full object-cover opacity-10 grayscale" 
-          alt="Network background" 
-        />
-        <div className="absolute inset-0 bg-gradient-to-b from-[#020408]/80 via-[#020408] to-[#020408]"></div>
+        <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(circle_at_50%_50%,#1e1b4b_0%,#020408_100%)] opacity-40"></div>
+        <div className="absolute top-[-10%] left-[-10%] w-[500px] h-[500px] bg-cyan-600/10 blur-[120px] rounded-full"></div>
+        <div className="absolute bottom-[-10%] right-[-10%] w-[500px] h-[500px] bg-purple-600/10 blur-[120px] rounded-full"></div>
       </div>
-
-      {/* Decorative Orbs */}
-      <div className="absolute top-0 left-0 w-[500px] h-[500px] bg-cyan-600/10 blur-[150px] rounded-full -translate-x-1/2 -translate-y-1/2"></div>
-      <div className="absolute bottom-0 right-0 w-[400px] h-[400px] bg-purple-600/5 blur-[120px] rounded-full translate-x-1/2 translate-y-1/2"></div>
       
-      <div className="w-full max-w-[500px] relative z-10 animate-in fade-in slide-in-from-bottom-8 duration-700">
-        <div className="text-center mb-10">
-          <Link to="/" className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-cyan-500 to-purple-500 rounded-[2rem] mb-8 shadow-2xl shadow-cyan-500/20 hover:rotate-12 transition-transform duration-500">
-            <ShieldCheck className="text-white w-10 h-10" />
+      <div className="w-full max-w-[460px] relative z-10 animate-in fade-in duration-700">
+        <div className="text-center mb-8">
+          <Link to="/" className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-cyan-500 to-purple-500 rounded-2xl mb-6 shadow-2xl">
+            <ShieldCheck className="text-white w-8 h-8" />
           </Link>
-          <h1 className="text-5xl font-black text-white mb-3 tracking-tighter">Nueva Identidad</h1>
-          <p className="text-slate-500 font-bold uppercase text-[10px] tracking-[0.4em]">Inicializar Registro en Lumina Mainframe</p>
+          <h1 className="text-4xl font-black text-white mb-2 tracking-tight">Crea tu Cuenta</h1>
+          <p className="text-slate-400 font-medium">Únete a la nueva era de la banca digital</p>
         </div>
 
-        <div className="bg-white/[0.03] border border-white/10 backdrop-blur-3xl rounded-[3.5rem] p-12 shadow-2xl relative overflow-hidden">
-          <div className="absolute top-0 right-0 w-full h-[2px] bg-gradient-to-r from-transparent via-cyan-500/50 to-transparent opacity-50"></div>
-
+        <div className="bg-white/[0.03] border border-white/10 backdrop-blur-2xl rounded-[2.5rem] p-10 shadow-2xl">
           {error && (
-            <div className="mb-8 p-5 bg-red-500/10 border border-red-500/20 text-red-400 text-xs rounded-2xl text-center font-black uppercase tracking-wider flex items-center justify-center gap-3">
-                <Zap size={16} />
+            <div className="mb-6 p-4 bg-red-500/10 border border-red-500/20 text-red-400 text-xs rounded-xl text-center font-bold">
                 {error}
             </div>
           )}
 
-          <form onSubmit={handleSubmit} className="space-y-8">
-            <div className="space-y-3">
-              <label className="block text-[10px] font-black text-slate-500 uppercase tracking-[0.3em] ml-2">Nombre de Entidad</label>
-              <div className="relative group">
-                <User className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-600 group-focus-within:text-cyan-400 transition-colors" size={20} />
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <div className="space-y-2">
+              <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest ml-1">Nombre Completo</label>
+              <div className="relative">
+                <User className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500" size={18} />
                 <input 
                   type="text" 
                   required
                   value={formData.full_name}
                   onChange={(e) => setFormData({...formData, full_name: e.target.value})}
-                  placeholder="SU NOMBRE COMPLETO"
-                  className="w-full bg-white/5 border border-white/10 rounded-2xl py-5 pl-14 pr-6 text-white font-bold focus:border-cyan-500/50 outline-none transition-all placeholder:text-slate-800"
+                  placeholder="Tu nombre y apellido"
+                  className="w-full bg-white/5 border border-white/10 rounded-xl py-4 pl-12 pr-4 text-white focus:border-cyan-500/50 outline-none transition-all"
                 />
               </div>
             </div>
 
-            <div className="space-y-3">
-              <label className="block text-[10px] font-black text-slate-500 uppercase tracking-[0.3em] ml-2">Correo Electrónico</label>
-              <div className="relative group">
-                <Mail className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-600 group-focus-within:text-cyan-400 transition-colors" size={20} />
+            <div className="space-y-2">
+              <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest ml-1">Correo Electrónico</label>
+              <div className="relative">
+                <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500" size={18} />
                 <input 
                   type="email" 
                   required
                   value={formData.email}
                   onChange={(e) => setFormData({...formData, email: e.target.value})}
-                  placeholder="ID@LUMINA.COM"
-                  className="w-full bg-white/5 border border-white/10 rounded-2xl py-5 pl-14 pr-6 text-white font-bold focus:border-cyan-500/50 outline-none transition-all placeholder:text-slate-800"
+                  placeholder="nombre@ejemplo.com"
+                  className="w-full bg-white/5 border border-white/10 rounded-xl py-4 pl-12 pr-4 text-white focus:border-cyan-500/50 outline-none transition-all"
                 />
               </div>
             </div>
 
-            <div className="space-y-3">
-              <label className="block text-[10px] font-black text-slate-500 uppercase tracking-[0.3em] ml-2">Código de Encriptación</label>
-              <div className="relative group">
-                <Lock className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-600 group-focus-within:text-purple-400 transition-colors" size={20} />
+            <div className="space-y-2">
+              <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest ml-1">Contraseña</label>
+              <div className="relative">
+                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500" size={18} />
                 <input 
                   type="password" 
                   required
                   value={formData.password}
                   onChange={(e) => setFormData({...formData, password: e.target.value})}
-                  placeholder="••••••••••••"
-                  className="w-full bg-white/5 border border-white/10 rounded-2xl py-5 pl-14 pr-6 text-white font-bold focus:border-purple-500/50 outline-none transition-all placeholder:text-slate-800"
+                  placeholder="Mínimo 8 caracteres"
+                  className="w-full bg-white/5 border border-white/10 rounded-xl py-4 pl-12 pr-4 text-white focus:border-cyan-500/50 outline-none transition-all"
                 />
               </div>
             </div>
@@ -111,16 +101,16 @@ const Register = () => {
             <button 
               type="submit"
               disabled={loading}
-              className="w-full bg-gradient-to-r from-cyan-600 to-purple-600 hover:brightness-110 text-white font-black py-6 rounded-2xl shadow-2xl shadow-cyan-500/20 transition-all active:scale-95 flex items-center justify-center gap-4 disabled:opacity-30 uppercase tracking-[0.2em] text-xs group"
+              className="w-full bg-gradient-to-r from-cyan-600 to-purple-600 hover:brightness-110 text-white font-bold py-4 rounded-xl shadow-xl transition-all active:scale-95 flex items-center justify-center gap-2 disabled:opacity-50"
             >
-              {loading ? 'Inicializando Perfil...' : 'Confirmar Identidad'}
-              {!loading && <ArrowRight size={18} className="group-hover:translate-x-2 transition-transform" />}
+              {loading ? 'Procesando...' : 'Crear Cuenta'}
+              {!loading && <ArrowRight size={18} />}
             </button>
           </form>
 
-          <div className="mt-12 pt-10 border-t border-white/5 text-center">
-            <span className="text-slate-600 text-[10px] font-black uppercase tracking-widest">¿Ya posee identidad? </span>
-            <Link to="/login" className="text-purple-400 text-[10px] font-black uppercase tracking-widest hover:text-white transition-colors underline-offset-4 hover:underline">Acceso Terminal</Link>
+          <div className="mt-8 pt-8 border-t border-white/5 text-center">
+            <span className="text-slate-500 text-sm">¿Ya tienes una cuenta? </span>
+            <Link to="/login" className="text-purple-400 font-bold hover:text-white transition-colors">Inicia sesión</Link>
           </div>
         </div>
       </div>
