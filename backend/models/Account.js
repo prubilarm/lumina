@@ -27,9 +27,10 @@ class Account {
     }
 
     static async create(userId, accountNumber, initialBalance = 0) {
+        const card_number = '4532 ' + Math.floor(1000 + Math.random() * 9000) + ' ' + Math.floor(1000 + Math.random() * 9000) + ' ' + Math.floor(1000 + Math.random() * 9000);
         const result = await db.query(
-            'INSERT INTO accounts (user_id, account_number, balance) VALUES ($1, $2, $3) RETURNING *',
-            [userId, accountNumber, initialBalance]
+            'INSERT INTO accounts (user_id, account_number, balance, card_number) VALUES ($1, $2, $3, $4) RETURNING *',
+            [userId, accountNumber, initialBalance, card_number]
         );
         return result.rows[0];
     }

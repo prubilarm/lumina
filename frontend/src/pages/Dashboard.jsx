@@ -342,6 +342,7 @@ const Dashboard = () => {
         isOpen={isCardsOpen} 
         onClose={() => setIsCardsOpen(false)} 
         user={user}
+        accounts={accounts}
       />
       <InvestmentsModal 
         isOpen={isInvestmentsOpen} 
