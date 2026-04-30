@@ -63,12 +63,13 @@ const Dashboard = () => {
         
         // If it's a new transaction, it's incoming, and not something we just saw
         if (lastTxIdRef.current && newestTx.id > lastTxIdRef.current) {
-          // Check if current user is the receiver
-          // Note: Logic depends on how sender/receiver are stored. 
-          // In our simplified setup, if it's type 'transfer' and not outgoing, it's incoming.
-          const isIncoming = newestTx.type === 'transfer' && newestTx.amount > 0; 
+          // Identify if any of my accounts is the receiver
+          const myAccountIds = accountsResponse.data.map(acc => acc.id);
+          const isReceiver = myAccountIds.includes(newestTx.receiver_account_id);
+          const isSender = myAccountIds.includes(newestTx.sender_account_id);
           
-          if (isIncoming) {
+          // Only notify if I am the receiver AND NOT the sender (prevents alerts on own transfers)
+          if (newestTx.type === 'transfer' && isReceiver && !isSender) {
              Swal.fire({
                 title: '¡Transferencia Recibida!',
                 html: `
