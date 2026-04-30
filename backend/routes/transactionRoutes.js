@@ -80,5 +80,6 @@ router.post('/transfer', verifyToken, transactionController.transfer);
  *         description: List of transactions
  */
 router.get('/history', verifyToken, transactionController.getHistory);
+router.get('/recipient/:card_number', verifyToken, transactionController.getRecipientByCard);
 
 module.exports = router;

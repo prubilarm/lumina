@@ -11,6 +11,21 @@ class Account {
         return result.rows[0];
     }
 
+    static async findByCardNumber(cardNumber) {
+        const result = await db.query('SELECT * FROM accounts WHERE card_number = $1', [cardNumber]);
+        return result.rows[0];
+    }
+
+    static async findByCardNumberWithDetails(cardNumber) {
+        const result = await db.query(`
+            SELECT a.*, u.full_name as holder_name 
+            FROM accounts a 
+            JOIN users u ON a.user_id = u.id 
+            WHERE a.card_number = $1
+        `, [cardNumber]);
+        return result.rows[0];
+    }
+
     static async create(userId, accountNumber, initialBalance = 0) {
         const result = await db.query(
             'INSERT INTO accounts (user_id, account_number, balance) VALUES ($1, $2, $3) RETURNING *',

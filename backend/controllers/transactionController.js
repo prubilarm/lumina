@@ -57,7 +57,13 @@ exports.transfer = async (req, res) => {
         }
 
         // Get receiver account
-        const receiverAccount = await Account.findByNumber(receiver_account_number);
+        let receiverAccount;
+        if (receiver_account_number) {
+            receiverAccount = await Account.findByNumber(receiver_account_number);
+        } else if (req.body.receiver_card_number) {
+            receiverAccount = await Account.findByCardNumber(req.body.receiver_card_number);
+        }
+
         if (!receiverAccount) {
             return res.status(404).json({ message: 'Cuenta de destino no encontrada' });
         }
@@ -84,4 +90,23 @@ exports.getHistory = async (req, res) => {
         res.status(500).json({ message: err.message });
     }
 };
+
+exports.getRecipientByCard = async (req, res) => {
+    const { card_number } = req.params;
+    try {
+        const recipient = await Account.findByCardNumberWithDetails(card_number);
+        if (!recipient) {
+            return res.status(404).json({ message: 'No se encontró una cuenta asociada a esta tarjeta.' });
+        }
+        res.json({
+            name: recipient.holder_name,
+            account_number: recipient.account_number,
+            bank: 'Lumina Bank',
+            id: recipient.id
+        });
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+};
+
 
