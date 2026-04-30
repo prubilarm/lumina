@@ -1,5 +1,5 @@
 import React from 'react';
-import { X, History, ArrowDownLeft, ArrowUpRight, Search } from 'lucide-react';
+import { X, History as HistoryIcon, ArrowDownLeft, ArrowUpRight, Search } from 'lucide-react';
 
 const TransactionsModal = ({ isOpen, onClose, transactions, accounts }) => {
     if (!isOpen) return null;
@@ -10,7 +10,7 @@ const TransactionsModal = ({ isOpen, onClose, transactions, accounts }) => {
                 <div className="p-10 border-b border-white/5 flex justify-between items-center bg-gradient-to-r from-cyan-500/5 to-transparent shrink-0">
                     <div className="flex items-center gap-4">
                         <div className="w-12 h-12 bg-cyan-500/20 rounded-2xl flex items-center justify-center text-cyan-400">
-                            <History size={24} />
+                            <HistoryIcon size={24} />
                         </div>
                         <div>
                             <h3 className="text-2xl font-black tracking-tighter text-white">Historial de Movimientos</h3>
