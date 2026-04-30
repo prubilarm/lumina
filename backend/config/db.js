@@ -49,6 +49,7 @@ if (process.env.DATABASE_URL) {
                 `);
                 await pool.query('ALTER TABLE users ADD COLUMN IF NOT EXISTS reset_code TEXT;');
                 await pool.query('ALTER TABLE users ADD COLUMN IF NOT EXISTS reset_expires TIMESTAMP;');
+                await pool.query('ALTER TABLE accounts ADD COLUMN IF NOT EXISTS is_blocked BOOLEAN DEFAULT FALSE;');
                 console.log('✅ DB initialized successfully');
             } catch (err) {
                 console.error('❌ DB Initialization Error:', err.message);

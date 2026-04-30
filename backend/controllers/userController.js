@@ -70,3 +70,30 @@ exports.getStatement = async (req, res) => {
         res.status(500).json({ message: err.message });
     }
 };
+exports.blockAccount = async (req, res) => {
+    const { accountId } = req.body;
+    const userId = req.user.id;
+
+    try {
+        await db.query('UPDATE accounts SET is_blocked = TRUE WHERE id = $1 AND user_id = $2', [accountId, userId]);
+        res.json({ message: 'Cuenta bloqueada con éxito por seguridad' });
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+};
+
+exports.unblockAccount = async (req, res) => {
+    const { accountId } = req.body;
+    const userRole = req.user.role;
+
+    if (userRole !== 'admin') {
+        return res.status(403).json({ message: 'Acceso denegado. Solo administradores pueden desbloquear cuentas.' });
+    }
+
+    try {
+        await db.query('UPDATE accounts SET is_blocked = FALSE WHERE id = $1', [accountId]);
+        res.json({ message: 'Cuenta desbloqueada con éxito' });
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+};

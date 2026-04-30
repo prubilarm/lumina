@@ -88,5 +88,7 @@ router.put('/change-password', verifyToken, userController.changePassword);
  */
 router.get('/balance', verifyToken, userController.getBalance);
 router.get('/statement', verifyToken, userController.getStatement);
+router.post('/block-account', verifyToken, userController.blockAccount);
+router.post('/unblock-account', verifyToken, userController.unblockAccount);
 
 module.exports = router;

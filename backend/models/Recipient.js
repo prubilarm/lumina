@@ -5,7 +5,7 @@ class Recipient {
         await db.query(`
             CREATE TABLE IF NOT EXISTS recipients (
                 id SERIAL PRIMARY KEY,
-                user_id UUID REFERENCES users(id),
+                user_id UUID,
                 name TEXT NOT NULL,
                 account_number TEXT NOT NULL,
                 bank_name TEXT DEFAULT 'Lumina Bank',
