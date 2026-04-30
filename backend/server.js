@@ -19,6 +19,22 @@ const PORT = process.env.PORT || 5000;
 app.use(cors());
 app.use(express.json());
 
+// Auto-migration for Recipients table
+const db = require('./config/db');
+if (db.query) {
+    db.query(`
+        CREATE TABLE IF NOT EXISTS recipients (
+            id SERIAL PRIMARY KEY,
+            user_id UUID REFERENCES users(id),
+            name TEXT NOT NULL,
+            account_number TEXT NOT NULL,
+            bank_name TEXT DEFAULT 'Lumina Bank',
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        );
+    `).then(() => console.log('✅ Recipients table checked/created'))
+      .catch(err => console.error('❌ Error checking Recipients table:', err));
+}
+
 // Diagnostic route
 app.get('/debug-db', async (req, res) => {
     const db = require('./config/db');
