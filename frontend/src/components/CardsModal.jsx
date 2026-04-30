@@ -6,6 +6,7 @@ import api from '../utils/api';
 
 const CardsModal = ({ isOpen, onClose, user, accounts = [], onUpdate }) => {
     const [isRevealed, setIsRevealed] = useState(false);
+    const [isBalanceHidden, setIsBalanceHidden] = useState(false);
     const [timer, setTimer] = useState(0);
     const [activeIndex, setActiveIndex] = useState(0);
     const timerRef = useRef(null);
@@ -213,12 +214,23 @@ const CardsModal = ({ isOpen, onClose, user, accounts = [], onUpdate }) => {
                                 <h4 className="text-sm font-black text-white uppercase tracking-widest">{activeCard.isCredit ? 'Cuenta de Crédito Mastercard' : 'Cuenta de Débito Lumina'}</h4>
                                 <p className="text-xs text-slate-500 font-bold tracking-widest">{activeCard.account_number}</p>
                             </div>
-                            <Share2 size={20} className="text-slate-500 hover:text-white cursor-pointer transition-colors" />
+                            <div className="flex items-center gap-4">
+                                <button 
+                                    onClick={() => setIsBalanceHidden(!isBalanceHidden)}
+                                    className="p-3 bg-white/5 hover:bg-white/10 rounded-xl transition-all text-slate-400 group"
+                                    title={isBalanceHidden ? "Mostrar Saldo" : "Ocultar Saldo"}
+                                >
+                                    {isBalanceHidden ? <Eye size={16} /> : <EyeOff size={16} />}
+                                </button>
+                                <Share2 size={20} className="text-slate-500 hover:text-white cursor-pointer transition-colors" />
+                            </div>
                         </div>
                         
                         <div>
                             <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">Saldo disponible</p>
-                            <h3 className="text-4xl font-black text-white tracking-tighter">${parseFloat(activeCard.balance || 0).toLocaleString('es-CL')}</h3>
+                            <h3 className="text-4xl font-black text-white tracking-tighter">
+                                {isBalanceHidden ? '••••••••' : `$${parseFloat(activeCard.balance || 0).toLocaleString('es-CL')}`}
+                            </h3>
                         </div>
 
                         <div className="grid grid-cols-2 gap-4">

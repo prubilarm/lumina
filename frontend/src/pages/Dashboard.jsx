@@ -43,6 +43,7 @@ const Dashboard = () => {
   const [isTransactionsOpen, setIsTransactionsOpen] = useState(false);
    const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isAdminOpen, setIsAdminOpen] = useState(false);
+  const [isBalanceHidden, setIsBalanceHidden] = useState(false);
   
   const lastTxIdRef = useRef(null);
   const navigate = useNavigate();
@@ -305,22 +306,31 @@ const Dashboard = () => {
                       <h4 className="text-white font-bold text-sm tracking-tight">Estado de Patrimonio Neto</h4>
                     </div>
                   </div>
-                  <button 
-                    onClick={() => handleAction('depositos')}
-                    className="group/btn flex items-center gap-3 bg-white/5 hover:bg-white/10 border border-white/10 rounded-2xl px-6 py-4 transition-all active:scale-95"
-                  >
-                    <span className="text-xs font-black uppercase tracking-widest text-slate-300 group-hover/btn:text-white transition-colors">Cargar Saldo</span>
-                    <div className="w-8 h-8 bg-indigo-500 rounded-xl flex items-center justify-center text-white shadow-lg shadow-indigo-500/20">
-                      <Plus size={18} />
-                    </div>
-                  </button>
+                  <div className="flex items-center gap-4">
+                    <button 
+                      onClick={() => handleAction('depositos')}
+                      className="group/btn flex items-center gap-3 bg-white/5 hover:bg-white/10 border border-white/10 rounded-2xl px-6 py-4 transition-all active:scale-95"
+                    >
+                      <span className="text-xs font-black uppercase tracking-widest text-slate-300 group-hover/btn:text-white transition-colors">Cargar Saldo</span>
+                      <div className="w-8 h-8 bg-indigo-500 rounded-xl flex items-center justify-center text-white shadow-lg shadow-indigo-500/20">
+                        <Plus size={18} />
+                      </div>
+                    </button>
+                    <button 
+                      onClick={() => setIsBalanceHidden(!isBalanceHidden)}
+                      className="p-4 bg-white/5 hover:bg-white/10 border border-white/10 rounded-2xl transition-all text-slate-400 hover:text-white"
+                      title={isBalanceHidden ? "Mostrar Saldo" : "Ocultar Saldo"}
+                    >
+                      {isBalanceHidden ? <Eye size={20} /> : <EyeOff size={20} />}
+                    </button>
+                  </div>
                 </div>
 
                 <div className="flex flex-col gap-2">
                   <p className="text-slate-500 text-xs font-bold uppercase tracking-[0.2em] ml-1">Saldo Total Disponible</p>
                   <div className="flex items-baseline gap-4">
                     <h3 className="text-7xl font-black text-white tracking-tighter drop-shadow-2xl">
-                      ${totalBalance.toLocaleString('es-CL')}
+                      {isBalanceHidden ? '••••••••' : `$${totalBalance.toLocaleString('es-CL')}`}
                     </h3>
                     <span className="text-2xl font-black text-slate-700 tracking-tighter uppercase">CLP</span>
                   </div>
