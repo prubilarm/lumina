@@ -16,7 +16,9 @@ import {
   Zap,
   HelpCircle,
   MessageSquare,
-  ShieldCheck
+  ShieldCheck,
+  Eye,
+  EyeOff
 } from 'lucide-react';
 import api from '../utils/api';
 import DepositModal from '../components/DepositModal';
