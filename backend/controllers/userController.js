@@ -14,7 +14,7 @@ exports.getProfile = async (req, res) => {
 
 exports.getBalance = async (req, res) => {
     try {
-        const accountsResult = await db.query('SELECT account_number, balance, currency FROM accounts WHERE user_id = $1', [req.user.id]);
+        const accountsResult = await db.query('SELECT id, account_number, balance, currency, card_number FROM accounts WHERE user_id = $1', [req.user.id]);
         res.json(accountsResult.rows);
     } catch (err) {
         res.status(500).json({ message: err.message });
