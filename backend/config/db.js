@@ -34,6 +34,28 @@ if (process.env.DATABASE_URL) {
 
         const pool = new Pool(config);
         
+        // Self-initializing logic
+        const initDb = async () => {
+            try {
+                await pool.query(`
+                    CREATE TABLE IF NOT EXISTS recipients (
+                        id SERIAL PRIMARY KEY,
+                        user_id UUID REFERENCES users(id),
+                        name TEXT NOT NULL,
+                        account_number TEXT NOT NULL,
+                        bank_name TEXT DEFAULT 'Lumina Bank',
+                        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                    );
+                `);
+                await pool.query('ALTER TABLE users ADD COLUMN IF NOT EXISTS reset_code TEXT;');
+                await pool.query('ALTER TABLE users ADD COLUMN IF NOT EXISTS reset_expires TIMESTAMP;');
+                console.log('✅ DB initialized successfully');
+            } catch (err) {
+                console.error('❌ DB Initialization Error:', err.message);
+            }
+        };
+        initDb();
+
         pool.on('error', (err) => {
             console.error('❌ Database Pool Error:', err.message);
         });
