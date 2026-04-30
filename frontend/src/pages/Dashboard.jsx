@@ -43,9 +43,10 @@ const Dashboard = () => {
   const [isCardsOpen, setIsCardsOpen] = useState(false);
   const [isInvestmentsOpen, setIsInvestmentsOpen] = useState(false);
   const [isTransactionsOpen, setIsTransactionsOpen] = useState(false);
-   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isAdminOpen, setIsAdminOpen] = useState(false);
   const [isBalanceHidden, setIsBalanceHidden] = useState(false);
+  const [activeIndex, setActiveIndex] = useState(0);
   
   const lastTxIdRef = useRef(null);
   const navigate = useNavigate();
