@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, Shield, Search, User, CreditCard, ArrowRight, ArrowLeft, History, Lock, Unlock, Eye, Info, Wallet } from 'lucide-react';
+import { X, Shield, Search, User, CreditCard, ArrowRight, ArrowLeft, History as HistoryIcon, Lock, Unlock, Eye, Info, Wallet } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import api from '../utils/api';
 import Swal from 'sweetalert2';
@@ -245,7 +245,7 @@ const AdminAuditPanel = ({ isOpen, onClose }) => {
                                         <div className="space-y-6">
                                             <div className="flex items-center justify-between">
                                                 <div className="flex items-center gap-3">
-                                                    <History size={18} className="text-purple-400" />
+                                                    <HistoryIcon size={18} className="text-purple-400" />
                                                     <h4 className="text-xs font-black text-slate-400 uppercase tracking-widest">
                                                         {selectedAccount ? 'Movimientos del Producto Seleccionado' : 'Historial General del Usuario'}
                                                     </h4>

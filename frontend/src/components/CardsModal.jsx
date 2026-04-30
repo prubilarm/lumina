@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { X, CreditCard, ShieldCheck, Zap, Lock, Eye, EyeOff, Wifi, Info, ShieldAlert, History, FileText, Share2, ChevronLeft, ChevronRight } from 'lucide-react';
+import { X, CreditCard, ShieldCheck, Zap, Lock, Eye, EyeOff, Wifi, Info, ShieldAlert, History as HistoryIcon, FileText, Share2, ChevronLeft, ChevronRight } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Swal from 'sweetalert2';
 import api from '../utils/api';
@@ -235,7 +235,7 @@ const CardsModal = ({ isOpen, onClose, user, accounts = [], onUpdate }) => {
 
                         <div className="grid grid-cols-2 gap-4">
                             <button className="flex items-center justify-center gap-3 bg-indigo-600 hover:bg-indigo-500 py-4 rounded-2xl text-xs font-black uppercase tracking-widest text-white transition-all shadow-lg shadow-indigo-500/10 active:scale-95">
-                                <History size={16} /> Movimientos
+                                <HistoryIcon size={16} /> Movimientos
                             </button>
                             <button className="flex items-center justify-center gap-3 bg-white/5 hover:bg-white/10 border border-white/10 py-4 rounded-2xl text-xs font-black uppercase tracking-widest text-white transition-all active:scale-95">
                                 <FileText size={16} /> Cartolas
