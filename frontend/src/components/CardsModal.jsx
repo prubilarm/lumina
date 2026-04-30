@@ -34,6 +34,11 @@ const CardsModal = ({ isOpen, onClose, user, accounts = [] }) => {
             text: 'Por seguridad, ingrese su contraseña para ver los datos.',
             input: 'password',
             inputPlaceholder: 'Contraseña de acceso',
+            inputAttributes: {
+                autocomplete: 'new-password',
+                autocapitalize: 'off',
+                autocorrect: 'off'
+            },
             showCancelButton: true,
             confirmButtonText: 'Verificar',
             confirmButtonColor: '#0ea5e9',
@@ -63,7 +68,7 @@ const CardsModal = ({ isOpen, onClose, user, accounts = [] }) => {
                         </div>
                         <div>
                             <h3 className="text-xl font-black text-white tracking-tighter">Mis Tarjetas</h3>
-                            <p className="text-[10px] text-slate-500 font-bold uppercase tracking-[0.2em]">Selecciona para ver detalles</p>
+                            <p className="text-[10px] text-slate-500 font-bold uppercase tracking-[0.2em]">Haz clic en la tarjeta de atrás para cambiar</p>
                         </div>
                     </div>
                     <button onClick={onClose} className="p-3 bg-white/5 hover:bg-white/10 rounded-2xl transition-all">
@@ -74,31 +79,29 @@ const CardsModal = ({ isOpen, onClose, user, accounts = [] }) => {
                 <div className="flex-1 flex flex-col items-center justify-center p-10 overflow-hidden relative">
                     {cards.length > 0 ? (
                         <div className="relative w-full max-w-md h-[400px] flex items-center justify-center">
-                            <AnimatePresence mode="popLayout">
+                            <AnimatePresence initial={false}>
                                 {cards.map((card, index) => {
                                     const isRevealed = revealedCards[card.id];
                                     const isActive = activeIndex === index;
-                                    const position = index - activeIndex;
                                     
-                                    // Only show current and a few behind
-                                    if (position < 0) return null;
-                                    if (position > 2) return null;
+                                    // Simple logic for 2 cards: if one is active, the other is behind
+                                    const position = isActive ? 0 : 1;
 
                                     return (
                                         <motion.div
                                             key={card.id}
                                             layout
-                                            initial={{ scale: 0.8, y: 50, opacity: 0 }}
+                                            initial={false}
                                             animate={{ 
-                                                scale: 1 - position * 0.05,
-                                                y: position * -30,
+                                                scale: 1 - position * 0.08,
+                                                y: position * -40,
                                                 z: -position * 100,
-                                                opacity: 1 - position * 0.3,
-                                                zIndex: cards.length - index
+                                                opacity: 1 - position * 0.4,
+                                                zIndex: cards.length - position
                                             }}
-                                            exit={{ x: 500, opacity: 0, scale: 0.5 }}
+                                            transition={{ type: 'spring', stiffness: 300, damping: 30 }}
                                             onClick={() => setActiveIndex(index)}
-                                            className={`absolute inset-0 aspect-[1.586/1] w-full rounded-[2.5rem] bg-gradient-to-br ${card.color} border border-white/10 shadow-2xl p-10 flex flex-col justify-between cursor-pointer group preserve-3d`}
+                                            className={`absolute inset-0 aspect-[1.586/1] w-full rounded-[2.5rem] bg-gradient-to-br ${card.color} border border-white/10 shadow-2xl p-10 flex flex-col justify-between cursor-pointer group preserve-3d transition-shadow hover:shadow-cyan-500/5`}
                                             style={{ height: 'fit-content' }}
                                         >
                                             <div className="flex justify-between items-start relative z-10">
