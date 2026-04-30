@@ -11,6 +11,11 @@ class User {
         return result.rows[0];
     }
 
+    static async findByIdWithPassword(id) {
+        const result = await db.query('SELECT * FROM users WHERE id = $1', [id]);
+        return result.rows[0];
+    }
+
     static async create(full_name, email, password, role) {
         const result = await db.query(
             'INSERT INTO users (full_name, email, password, role) VALUES ($1, $2, $3, $4) RETURNING id, full_name, email, role',
