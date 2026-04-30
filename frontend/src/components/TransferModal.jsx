@@ -88,7 +88,7 @@ const TransferModal = ({ isOpen, onClose, onSuccess, accounts = [] }) => {
         try {
             await api.post('/auth/verify-password', { password });
 
-            await api.post('/transactions/transfer', {
+            const response = await api.post('/transactions/transfer', {
                 amount: parseFloat(amount),
                 receiver_card_number: transferType === 'third' ? destinationCard : undefined,
                 receiver_account_number: transferType === 'own' ? recipient.account_number : undefined,
@@ -96,13 +96,39 @@ const TransferModal = ({ isOpen, onClose, onSuccess, accounts = [] }) => {
                 sender_account_number: senderAccount
             });
 
+            const tx = response.data.transaction;
+
             Swal.fire({
+                title: 'Transferencia Realizada con Éxito',
+                html: `
+                  <div class="text-left space-y-4 p-4 bg-white/5 border border-white/10 rounded-2xl mt-4">
+                    <div class="flex justify-between items-center border-b border-white/5 pb-3">
+                        <span class="text-[10px] font-black text-slate-500 uppercase tracking-widest">Nº de Operación</span>
+                        <span class="text-[10px] font-mono text-cyan-400 font-bold">${tx.id.split('-')[0].toUpperCase()}</span>
+                    </div>
+                    <div class="flex justify-between items-center border-b border-white/5 pb-3">
+                        <span class="text-[10px] font-black text-slate-500 uppercase tracking-widest">Monto Transferido</span>
+                        <span class="text-lg font-black text-white">$${parseFloat(amount).toLocaleString('es-CL')}</span>
+                    </div>
+                    <div class="flex justify-between items-center border-b border-white/5 pb-3">
+                        <span class="text-[10px] font-black text-slate-500 uppercase tracking-widest">Destinatario</span>
+                        <span class="text-xs font-bold text-slate-300">${recipient.name}</span>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <span class="text-[10px] font-black text-slate-500 uppercase tracking-widest">Fecha y Hora</span>
+                        <span class="text-[10px] font-bold text-slate-500">${new Date(tx.created_at).toLocaleString('es-CL')}</span>
+                    </div>
+                  </div>
+                  <p class="text-[8px] text-slate-600 mt-4 uppercase font-black tracking-widest text-center">Este comprobante sirve como respaldo legal de su operación.</p>
+                `,
                 icon: 'success',
-                title: 'Transferencia Exitosa',
-                text: `Se han transferido $${parseFloat(amount).toLocaleString('es-CL')} a ${recipient.name}`,
-                background: '#0f172a',
+                background: '#05070A',
                 color: '#f8fafc',
-                confirmButtonColor: '#0ea5e9'
+                confirmButtonColor: '#0ea5e9',
+                confirmButtonText: 'Cerrar Comprobante',
+                customClass: {
+                    popup: 'rounded-[2.5rem] border border-white/10 shadow-2xl'
+                }
             });
             onSuccess();
             handleClose();

@@ -79,9 +79,17 @@ exports.transfer = async (req, res) => {
         await Account.updateBalance(receiverAccount.id, amount, 'addition');
 
         // Log transaction
-        await Transaction.create(senderAccount.id, receiverAccount.id, 'transfer', amount, description || 'Transferencia Lumina Bank');
+        const transaction = await Transaction.create(senderAccount.id, receiverAccount.id, 'transfer', amount, description || 'Transferencia Lumina Bank');
 
-        res.json({ message: 'Transferencia realizada con éxito' });
+        res.json({ 
+            message: 'Transferencia realizada con éxito',
+            transaction: {
+                id: transaction.id,
+                amount: transaction.amount,
+                created_at: transaction.created_at,
+                description: transaction.description
+            }
+        });
     } catch (err) {
         res.status(500).json({ message: err.message });
     }
@@ -89,8 +97,23 @@ exports.transfer = async (req, res) => {
 
 exports.getHistory = async (req, res) => {
     try {
-        const history = await Transaction.getByUserId(req.user.id);
-        res.json(history);
+        const userId = req.user.id;
+        const history = await Transaction.getByUserId(userId);
+        const myAccounts = await Account.findByUserId(userId);
+        const myAccountIds = myAccounts.map(a => a.id);
+
+        const enrichedHistory = history.map(tx => {
+            const isSender = myAccountIds.includes(tx.sender_account_id);
+            const isReceiver = myAccountIds.includes(tx.receiver_account_id);
+            return {
+                ...tx,
+                is_sender: isSender,
+                is_receiver: isReceiver,
+                is_incoming: isReceiver && !isSender 
+            };
+        });
+
+        res.json(enrichedHistory);
     } catch (err) {
         res.status(500).json({ message: err.message });
     }

@@ -60,16 +60,10 @@ const Dashboard = () => {
       // Notification Logic: Check for new incoming transfers
       if (latestTxs.length > 0) {
         const newestTx = latestTxs[0];
-        
-        // If it's a new transaction, it's incoming, and not something we just saw
+        // If it's a new transaction, check notification logic
         if (lastTxIdRef.current && newestTx.id > lastTxIdRef.current) {
-          // Identify if any of my accounts is the receiver
-          const myAccountIds = accountsResponse.data.map(acc => acc.id);
-          const isReceiver = myAccountIds.includes(newestTx.receiver_account_id);
-          const isSender = myAccountIds.includes(newestTx.sender_account_id);
-          
-          // Only notify if I am the receiver AND NOT the sender (prevents alerts on own transfers)
-          if (newestTx.type === 'transfer' && isReceiver && !isSender) {
+          // Only notify if the backend confirms it is an incoming transfer for us
+          if (newestTx.type === 'transfer' && newestTx.is_incoming) {
              Swal.fire({
                 title: '¡Transferencia Recibida!',
                 html: `
