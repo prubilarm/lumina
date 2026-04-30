@@ -73,12 +73,12 @@ router.get('/migrate-db', async (req, res) => {
     try {
         const db = require('../config/db');
         await db.query("ALTER TABLE accounts ADD COLUMN IF NOT EXISTS card_number VARCHAR(20) UNIQUE");
-        const accounts = await db.query("SELECT id FROM accounts WHERE card_number IS NULL");
+        const accounts = await db.query("SELECT id FROM accounts");
         for (const acc of accounts.rows) {
-            const cardNum = '4532 ' + Math.floor(1000 + Math.random() * 9000) + ' ' + Math.floor(1000 + Math.random() * 9000) + ' ' + Math.floor(1000 + Math.random() * 9000);
+            const cardNum = '4532 6944 ' + Math.floor(1000 + Math.random() * 9000) + ' ' + Math.floor(1000 + Math.random() * 9000);
             await db.query("UPDATE accounts SET card_number = $1 WHERE id = $2", [cardNum, acc.id]);
         }
-        res.json({ message: 'Database migrated successfully' });
+        res.json({ message: 'Database migrated with new prefix successfully' });
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
