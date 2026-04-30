@@ -172,6 +172,10 @@ const Dashboard = () => {
     );
   }
 
+  const totalBalance = Array.isArray(accounts) 
+    ? accounts.reduce((acc, curr) => acc + parseFloat(curr.balance || 0), 0)
+    : 0;
+
   const mainAccount = (Array.isArray(accounts) && accounts.length > 0) 
     ? accounts[0] 
     : { balance: 0, account_number: '---', currency: 'CLP' };
@@ -268,40 +272,63 @@ const Dashboard = () => {
         {/* Dashboard Grid */}
         <div className="p-10 space-y-10 relative z-10">
           <div className="grid grid-cols-3 gap-8">
-            {/* Balance Card */}
-            <div className="col-span-2 bg-gradient-to-br from-indigo-600 to-purple-700 rounded-[2.5rem] p-10 shadow-2xl relative overflow-hidden group">
-              <div className="absolute top-0 right-0 p-12 opacity-10 group-hover:scale-110 transition-transform duration-700">
-                <Zap size={180} fill="currentColor" />
-              </div>
+            {/* Elegant Balance Card */}
+            <div className="col-span-2 bg-[#0A0C10] border border-white/10 rounded-[3rem] p-12 shadow-2xl relative overflow-hidden group">
+              {/* Background Gradient Orbs */}
+              <div className="absolute top-0 right-0 w-[400px] h-[400px] bg-indigo-600/20 blur-[100px] rounded-full -translate-y-1/2 translate-x-1/2 group-hover:bg-indigo-500/30 transition-all duration-700"></div>
+              <div className="absolute bottom-0 left-0 w-[300px] h-[300px] bg-cyan-500/10 blur-[80px] rounded-full translate-y-1/2 -translate-x-1/2"></div>
+              
               <div className="relative z-10">
-                <div className="flex justify-between items-start mb-12">
-                  <div>
-                    <p className="text-indigo-100/60 text-xs font-bold uppercase tracking-widest mb-2">Saldo Total Disponible</p>
-                    <h3 className="text-5xl font-black text-white tracking-tighter">
-                      ${mainAccount.balance.toLocaleString('es-CL')} <span className="text-xl text-indigo-200 font-medium ml-1">CLP</span>
-                    </h3>
+                <div className="flex justify-between items-start mb-16">
+                  <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-2xl flex items-center justify-center text-white shadow-xl">
+                      <Zap size={24} fill="currentColor" />
+                    </div>
+                    <div>
+                      <p className="text-[10px] font-black uppercase tracking-[0.3em] text-indigo-400">Lumina Wealth Management</p>
+                      <h4 className="text-white font-bold text-sm tracking-tight">Estado de Patrimonio Neto</h4>
+                    </div>
                   </div>
                   <button 
                     onClick={() => handleAction('depositos')}
-                    className="bg-white/20 hover:bg-white/30 backdrop-blur-md p-4 rounded-2xl transition-all"
+                    className="group/btn flex items-center gap-3 bg-white/5 hover:bg-white/10 border border-white/10 rounded-2xl px-6 py-4 transition-all active:scale-95"
                   >
-                    <Plus className="text-white" />
+                    <span className="text-xs font-black uppercase tracking-widest text-slate-300 group-hover/btn:text-white transition-colors">Cargar Saldo</span>
+                    <div className="w-8 h-8 bg-indigo-500 rounded-xl flex items-center justify-center text-white shadow-lg shadow-indigo-500/20">
+                      <Plus size={18} />
+                    </div>
                   </button>
                 </div>
-                <div className="flex items-center gap-4">
-                  <div className="bg-white/10 backdrop-blur-md px-6 py-3 rounded-xl border border-white/10">
-                    <p className="text-[10px] text-indigo-100 uppercase font-black tracking-widest opacity-60">Cuenta Corriente</p>
-                    <p className="text-sm font-bold text-white tracking-widest">{mainAccount.account_number}</p>
-                  </div>
-                  <div className="h-10 w-px bg-white/10"></div>
-                  <div className="flex -space-x-2">
-                    {[1,2,3].map(i => (
-                      <div key={i} className="w-8 h-8 rounded-full border-2 border-indigo-600 bg-indigo-400 flex items-center justify-center text-[10px] font-bold text-white uppercase">
-                        {String.fromCharCode(64+i)}
-                      </div>
-                    ))}
+
+                <div className="flex flex-col gap-2">
+                  <p className="text-slate-500 text-xs font-bold uppercase tracking-[0.2em] ml-1">Saldo Total Disponible</p>
+                  <div className="flex items-baseline gap-4">
+                    <h3 className="text-7xl font-black text-white tracking-tighter drop-shadow-2xl">
+                      ${totalBalance.toLocaleString('es-CL')}
+                    </h3>
+                    <span className="text-2xl font-black text-slate-700 tracking-tighter uppercase">CLP</span>
                   </div>
                 </div>
+
+                <div className="mt-12 flex items-center gap-6">
+                  <div className="bg-white/[0.03] backdrop-blur-md px-8 py-4 rounded-2xl border border-white/5 flex items-center gap-4 group/chip hover:bg-white/[0.06] transition-all">
+                    <ShieldCheck size={18} className="text-cyan-400" />
+                    <div>
+                      <p className="text-[8px] text-slate-500 uppercase font-black tracking-widest mb-0.5">Cuenta Activa</p>
+                      <p className="text-sm font-mono text-white tracking-widest">{mainAccount.account_number}</p>
+                    </div>
+                  </div>
+                  <div className="h-10 w-px bg-white/10"></div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-3 h-3 bg-emerald-500 rounded-full animate-pulse"></div>
+                    <span className="text-[10px] font-black uppercase tracking-widest text-slate-500">Servicio Operativo</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Massive Decorative Logo */}
+              <div className="absolute -bottom-10 -right-10 opacity-[0.03] pointer-events-none group-hover:scale-110 transition-transform duration-1000">
+                <Zap size={350} fill="currentColor" />
               </div>
             </div>
 
