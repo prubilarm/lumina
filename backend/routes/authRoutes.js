@@ -69,24 +69,5 @@ router.post('/register', authController.register);
 const { verifyToken } = require('../middlewares/authMiddleware');
 router.post('/login', authController.login);
 router.post('/verify-password', verifyToken, authController.verifyPassword);
-router.get('/migrate-clp', async (req, res) => {
-    try {
-        const db = require('../config/db');
-        await db.query("UPDATE accounts SET currency = 'CLP'");
-        
-        // Admin balance: 10M
-        const adminRes = await db.query("SELECT id FROM users WHERE role = 'admin'");
-        if (adminRes.rows.length > 0) {
-            await db.query("UPDATE accounts SET balance = 10000000 WHERE user_id = $1", [adminRes.rows[0].id]);
-        }
-
-        // Default balance for others: 1M
-        await db.query("UPDATE accounts SET balance = 1000000 WHERE balance = 0");
-
-        res.json({ message: 'Database migrated to CLP and balances fixed successfully' });
-    } catch (err) {
-        res.status(500).json({ error: err.message });
-    }
-});
 
 module.exports = router;
