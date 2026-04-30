@@ -99,4 +99,49 @@ exports.verifyPassword = async (req, res) => {
     }
 };
 
+const db = require('../config/db');
+
+exports.forgotPassword = async (req, res) => {
+    const { email } = req.body;
+    try {
+        const user = await User.findByEmail(email);
+        if (!user) {
+            return res.status(404).json({ message: 'No existe un usuario con este correo' });
+        }
+
+        // Generate 6 digit code
+        const resetCode = Math.floor(100000 + Math.random() * 900000).toString();
+        const expires = new Date(Date.now() + 3600000); // 1 hour
+
+        await db.query('UPDATE users SET reset_code = $1, reset_expires = $2 WHERE id = $3', [resetCode, expires, user.id]);
+
+        // In a real app, send email. For this demo, we return the code (or pretend we sent it)
+        console.log(`Reset Code for ${email}: ${resetCode}`);
+        
+        res.json({ message: 'Código de recuperación enviado al correo (Demo: use ' + resetCode + ')' });
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+};
+
+exports.resetPassword = async (req, res) => {
+    const { email, code, newPassword } = req.body;
+    try {
+        const userResult = await db.query('SELECT * FROM users WHERE email = $1 AND reset_code = $2 AND reset_expires > NOW()', [email, code]);
+        if (userResult.rows.length === 0) {
+            return res.status(400).json({ message: 'Código inválido o expirado' });
+        }
+
+        const user = userResult.rows[0];
+        const salt = await bcrypt.genSalt(10);
+        const hashedPassword = await bcrypt.hash(newPassword, salt);
+
+        await db.query('UPDATE users SET password = $1, reset_code = NULL, reset_expires = NULL WHERE id = $2', [hashedPassword, user.id]);
+
+        res.json({ message: 'Contraseña restablecida con éxito' });
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+};
+
 

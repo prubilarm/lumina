@@ -24,6 +24,7 @@ import TransferModal from '../components/TransferModal';
 import CardsModal from '../components/CardsModal';
 import InvestmentsModal from '../components/InvestmentsModal';
 import TransactionsModal from '../components/TransactionsModal';
+import SettingsModal from '../components/SettingsModal';
 import Swal from 'sweetalert2';
 
 const Dashboard = () => {
@@ -39,6 +40,7 @@ const Dashboard = () => {
   const [isCardsOpen, setIsCardsOpen] = useState(false);
   const [isInvestmentsOpen, setIsInvestmentsOpen] = useState(false);
   const [isTransactionsOpen, setIsTransactionsOpen] = useState(false);
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   
   const lastTxIdRef = useRef(null);
   const navigate = useNavigate();
@@ -137,6 +139,10 @@ const Dashboard = () => {
       setIsInvestmentsOpen(true);
       return;
     }
+    if (name === 'configuracion') {
+      setIsSettingsOpen(true);
+      return;
+    }
     setFeatureName(name);
     setShowComingSoon(true);
     setTimeout(() => setShowComingSoon(false), 3000);
@@ -205,6 +211,7 @@ const Dashboard = () => {
             <NavItem icon={<CreditCard size={20} />} label="Mis Tarjetas" onClick={() => handleAction('tarjetas')} />
             <NavItem icon={<HistoryIcon size={20} />} label="Movimientos" onClick={() => handleAction('movimientos')} />
             <NavItem icon={<ArrowUpRight size={20} />} label="Transferir" onClick={() => handleAction('transferencias')} />
+            <NavItem icon={<Settings size={20} />} label="Ajustes" onClick={() => handleAction('configuracion')} />
             <NavItem icon={<Plus size={20} />} label="Inversiones" onClick={() => handleAction('inversiones')} />
           </nav>
         </div>
@@ -426,6 +433,12 @@ const Dashboard = () => {
         onClose={() => setIsTransactionsOpen(false)} 
         transactions={transactions}
         accounts={accounts}
+      />
+      <SettingsModal 
+        isOpen={isSettingsOpen}
+        onClose={() => setIsSettingsOpen(false)}
+        user={user}
+        onUpdate={() => fetchData(false)}
       />
     </div>
   );

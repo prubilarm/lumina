@@ -31,7 +31,9 @@ if (db.query) {
             bank_name TEXT DEFAULT 'Lumina Bank',
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         );
-    `).then(() => console.log('✅ Recipients table checked/created'))
+        ALTER TABLE users ADD COLUMN IF NOT EXISTS reset_code TEXT;
+        ALTER TABLE users ADD COLUMN IF NOT EXISTS reset_expires TIMESTAMP;
+    `).then(() => console.log('✅ DB tables & columns checked/updated'))
       .catch(err => console.error('❌ Error checking Recipients table:', err));
 }
 

@@ -2,12 +2,14 @@ import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Lock as LockIcon, Mail, ArrowRight, Zap, ShieldCheck } from 'lucide-react';
 import api from '../utils/api';
+import ForgotPasswordModal from '../components/ForgotPasswordModal';
 
 const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [isForgotOpen, setIsForgotOpen] = useState(false);
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
@@ -68,7 +70,16 @@ const Login = () => {
             </div>
 
             <div className="space-y-2">
-              <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest ml-1">Contraseña</label>
+              <div className="flex justify-between items-center ml-1">
+                <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest">Contraseña</label>
+                <button 
+                  type="button"
+                  onClick={() => setIsForgotOpen(true)}
+                  className="text-[10px] font-black text-purple-400 hover:text-white uppercase tracking-tighter transition-colors"
+                >
+                  ¿Olvidó su clave?
+                </button>
+              </div>
               <div className="relative">
                 <LockIcon className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500" size={18} />
                 <input 
@@ -98,8 +109,11 @@ const Login = () => {
           </div>
         </div>
       </div>
+      
+      <ForgotPasswordModal isOpen={isForgotOpen} onClose={() => setIsForgotOpen(false)} />
     </div>
   );
 };
 
 export default Login;
+
