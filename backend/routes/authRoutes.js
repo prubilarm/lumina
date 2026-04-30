@@ -66,6 +66,8 @@ router.post('/register', authController.register);
  *       401:
  *         description: Unauthorized
  */
+const { verifyToken } = require('../middlewares/authMiddleware');
 router.post('/login', authController.login);
+router.post('/verify-password', verifyToken, authController.verifyPassword);
 
 module.exports = router;
