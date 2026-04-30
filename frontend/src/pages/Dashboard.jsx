@@ -297,66 +297,115 @@ const Dashboard = () => {
               <div className="absolute top-0 right-0 w-[400px] h-[400px] bg-indigo-600/20 blur-[100px] rounded-full -translate-y-1/2 translate-x-1/2 group-hover:bg-indigo-500/30 transition-all duration-700"></div>
               <div className="absolute bottom-0 left-0 w-[300px] h-[300px] bg-cyan-500/10 blur-[80px] rounded-full translate-y-1/2 -translate-x-1/2"></div>
               
-              <div className="relative z-10">
-                <div className="flex justify-between items-start mb-16">
+              {/* Unified Swipeable Cards Dashboard */}
+              <div className="relative z-10 w-full h-full flex flex-col justify-center">
+                <div className="flex justify-between items-center mb-8">
                   <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-2xl flex items-center justify-center text-white shadow-xl">
-                      <Zap size={24} fill="currentColor" />
+                    <div className="w-10 h-10 bg-indigo-500/20 rounded-xl flex items-center justify-center text-indigo-400">
+                      <CreditCard size={20} />
                     </div>
                     <div>
-                      <p className="text-[10px] font-black uppercase tracking-[0.3em] text-indigo-400">Lumina Wealth Management</p>
-                      <h4 className="text-white font-bold text-sm tracking-tight">Estado de Patrimonio Neto</h4>
+                      <p className="text-[9px] font-black uppercase tracking-[0.3em] text-indigo-400">Lumina Wealth Management</p>
+                      <h4 className="text-white font-bold text-sm tracking-tight">Tus Productos Premium</h4>
                     </div>
                   </div>
-                  <div className="flex items-center gap-4">
+                  <div className="flex items-center gap-2">
                     <button 
                       onClick={() => handleAction('depositos')}
-                      className="group/btn flex items-center gap-3 bg-white/5 hover:bg-white/10 border border-white/10 rounded-2xl px-6 py-4 transition-all active:scale-95"
+                      className="p-3 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl transition-all text-slate-300"
+                      title="Cargar Saldo"
                     >
-                      <span className="text-xs font-black uppercase tracking-widest text-slate-300 group-hover/btn:text-white transition-colors">Cargar Saldo</span>
-                      <div className="w-8 h-8 bg-indigo-500 rounded-xl flex items-center justify-center text-white shadow-lg shadow-indigo-500/20">
-                        <Plus size={18} />
-                      </div>
+                      <Plus size={18} />
                     </button>
                     <button 
                       onClick={() => setIsBalanceHidden(!isBalanceHidden)}
-                      className="p-4 bg-white/5 hover:bg-white/10 border border-white/10 rounded-2xl transition-all text-slate-400 hover:text-white"
-                      title={isBalanceHidden ? "Mostrar Saldo" : "Ocultar Saldo"}
+                      className="p-3 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl transition-all text-slate-400"
                     >
-                      {isBalanceHidden ? <Eye size={20} /> : <EyeOff size={20} />}
+                      {isBalanceHidden ? <Eye size={18} /> : <EyeOff size={18} />}
                     </button>
                   </div>
                 </div>
 
-                <div className="flex flex-col gap-2">
-                  <p className="text-slate-500 text-xs font-bold uppercase tracking-[0.2em] ml-1">Saldo Total Disponible</p>
-                  <div className="flex items-baseline gap-4">
-                    <h3 className="text-7xl font-black text-white tracking-tighter drop-shadow-2xl">
-                      {isBalanceHidden ? '••••••••' : `$${totalBalance.toLocaleString('es-CL')}`}
-                    </h3>
-                    <span className="text-2xl font-black text-slate-700 tracking-tighter uppercase">CLP</span>
-                  </div>
+                <div className="relative w-full h-[320px] flex items-center justify-center">
+                  <AnimatePresence mode="wait">
+                    {accounts.length > 0 && (() => {
+                      const activeAcc = accounts[activeIndex] || accounts[0];
+                      const isCredit = activeIndex === 0;
+                      const color = isCredit 
+                          ? 'from-[#1a1a1a] via-[#333333] to-[#000000]' 
+                          : 'from-[#0f172a] via-[#1e293b] to-[#020617]';
+                      
+                      return (
+                        <motion.div
+                          key={`dash-card-${activeAcc.id}`}
+                          initial={{ opacity: 0, x: 50, scale: 0.95 }}
+                          animate={{ opacity: 1, x: 0, scale: 1 }}
+                          exit={{ opacity: 0, x: -50, scale: 0.95 }}
+                          transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+                          className={`absolute inset-0 bg-gradient-to-br ${color} rounded-[2.5rem] border border-white/10 shadow-[0_30px_60px_rgba(0,0,0,0.5)] p-10 flex flex-col justify-between overflow-hidden cursor-grab active:cursor-grabbing group/card`}
+                          drag="x"
+                          dragConstraints={{ left: 0, right: 0 }}
+                          onDragEnd={(e, { offset }) => {
+                            if (offset.x > 80) setActiveIndex((prev) => (prev - 1 + accounts.length) % accounts.length);
+                            else if (offset.x < -80) setActiveIndex((prev) => (prev + 1) % accounts.length);
+                          }}
+                        >
+                          <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/[0.05] to-transparent pointer-events-none"></div>
+                          
+                          <div className="flex justify-between items-start relative z-10">
+                            <div className="space-y-1">
+                              <p className="text-[9px] font-black text-white/30 uppercase tracking-[0.3em]">{isCredit ? 'Lumina Credit Mastercard' : 'Lumina Debit Digital'}</p>
+                              <h3 className="text-xl font-black text-white tracking-tighter italic">Lumina Bank</h3>
+                            </div>
+                            {isCredit ? (
+                              <div className="flex items-center">
+                                <div className="w-8 h-8 rounded-full bg-[#eb001b] opacity-90 shadow-lg"></div>
+                                <div className="w-8 h-8 rounded-full bg-[#f79e1b] -ml-4 opacity-90 shadow-lg"></div>
+                              </div>
+                            ) : (
+                              <div className="w-10 h-10 bg-white/10 rounded-xl flex items-center justify-center border border-white/20">
+                                <Zap size={20} className="text-white" fill="currentColor" />
+                              </div>
+                            )}
+                          </div>
+
+                          <div className="relative z-10 space-y-1">
+                            <p className="text-[10px] font-black text-white/30 uppercase tracking-[0.3em] ml-1">Saldo Disponible</p>
+                            <h3 className="text-5xl font-black text-white tracking-tighter drop-shadow-2xl">
+                              {isBalanceHidden ? '••••••••' : `$${parseFloat(activeAcc.balance || 0).toLocaleString('es-CL')}`}
+                            </h3>
+                          </div>
+
+                          <div className="relative z-10 flex justify-between items-end">
+                            <div>
+                              <p className="text-[10px] font-mono text-white/40 tracking-[0.2em]">
+                                •••• •••• •••• {activeAcc.account_number?.slice(-4)}
+                              </p>
+                            </div>
+                            <div className="flex gap-3">
+                              <button onClick={(e) => { e.stopPropagation(); handleAction('movimientos'); }} className="p-3 bg-white/10 hover:bg-white/20 rounded-xl border border-white/10 text-white/80 transition-all active:scale-95">
+                                <HistoryIcon size={16} />
+                              </button>
+                              <button onClick={(e) => { e.stopPropagation(); handleAction('tarjetas'); }} className="p-3 bg-white/5 hover:bg-white/10 rounded-xl border border-white/10 text-white/60 transition-all active:scale-95">
+                                <Plus size={16} />
+                              </button>
+                            </div>
+                          </div>
+                        </motion.div>
+                      );
+                    })()}
+                  </AnimatePresence>
                 </div>
 
-                <div className="mt-12 flex items-center gap-6">
-                  <div className="bg-white/[0.03] backdrop-blur-md px-8 py-4 rounded-2xl border border-white/5 flex items-center gap-4 group/chip hover:bg-white/[0.06] transition-all">
-                    <ShieldCheck size={18} className="text-cyan-400" />
-                    <div>
-                      <p className="text-[8px] text-slate-500 uppercase font-black tracking-widest mb-0.5">Cuenta Activa</p>
-                      <p className="text-sm font-mono text-white tracking-widest">{mainAccount.account_number}</p>
-                    </div>
-                  </div>
-                  <div className="h-10 w-px bg-white/10"></div>
-                  <div className="flex items-center gap-2">
-                    <div className="w-3 h-3 bg-emerald-500 rounded-full animate-pulse"></div>
-                    <span className="text-[10px] font-black uppercase tracking-widest text-slate-500">Servicio Operativo</span>
-                  </div>
+                {/* Pagination Dots Dashboard */}
+                <div className="flex justify-center gap-2 mt-6">
+                  {accounts.map((_, i) => (
+                    <div 
+                      key={i} 
+                      className={`h-1 rounded-full transition-all duration-500 ${i === activeIndex ? 'w-8 bg-cyan-500' : 'w-2 bg-white/10'}`} 
+                    />
+                  ))}
                 </div>
-              </div>
-
-              {/* Massive Decorative Logo */}
-              <div className="absolute -bottom-10 -right-10 opacity-[0.03] pointer-events-none group-hover:scale-110 transition-transform duration-1000">
-                <Zap size={350} fill="currentColor" />
               </div>
             </div>
 
