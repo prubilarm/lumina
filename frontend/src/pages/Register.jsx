@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { User, Mail, Lock, ArrowRight, ShieldCheck, Zap } from 'lucide-react';
+import { User, Mail, Lock as LockIcon, ArrowRight, ShieldCheck, Zap } from 'lucide-react';
 import api from '../utils/api';
 
 const Register = () => {
@@ -86,7 +86,7 @@ const Register = () => {
             <div className="space-y-2">
               <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest ml-1">Contraseña</label>
               <div className="relative">
-                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500" size={18} />
+                <LockIcon className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500" size={18} />
                 <input 
                   type="password" 
                   required

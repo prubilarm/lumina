@@ -11,7 +11,7 @@ import {
   Menu,
   Phone,
   MapPin,
-  Lock,
+  Lock as LockIcon,
   ShieldCheck,
   TrendingUp,
   Cpu,
@@ -111,7 +111,7 @@ const LandingPage = () => {
                             to="/login" 
                             className="bg-white/5 border border-white/10 text-white px-8 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-white/10 transition-all flex items-center gap-3"
                         >
-                            <Lock size={14} className="text-purple-400"/> Login Terminal
+                            <LockIcon size={14} className="text-purple-400"/> Login Terminal
                         </Link>
                         <button className="lg:hidden text-white" onClick={() => setIsMenuOpen(!isMenuOpen)}>
                             {isMenuOpen ? <X size={24}/> : <Menu size={24}/>}

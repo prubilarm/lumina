@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import api from '../services/api';
-import { ArrowDownCircle, ArrowUpCircle, History, CheckCircle2 } from 'lucide-react';
+import { ArrowDownCircle, ArrowUpCircle, History as HistoryIcon, CheckCircle2 } from 'lucide-react';
 import { alerts } from '../utils/alerts';
 import $ from 'jquery';
 import 'datatables.net-dt';
@@ -146,7 +146,7 @@ const Transactions = () => {
         {/* Historial */}
         <div className="card">
           <h3 style={{ marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            <History size={20} /> Historial de Movimientos
+            <HistoryIcon size={20} /> Historial de Movimientos
           </h3>
           <div style={{ overflowX: 'auto' }}>
             <table ref={tableRef} className="display" style={{ width: '100%', borderCollapse: 'collapse' }}>

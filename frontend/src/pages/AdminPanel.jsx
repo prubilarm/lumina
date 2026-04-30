@@ -16,7 +16,7 @@ import {
   Zap,
   Terminal,
   ShieldCheck,
-  Lock,
+  Lock as LockIcon,
   ChevronRight
 } from 'lucide-react';
 import api from '../utils/api';
@@ -38,8 +38,8 @@ const AdminPanel = () => {
                 api.get('/admin/users'),
                 api.get('/admin/transactions')
             ]);
-            setUsers(usersRes.data);
-            setTransactions(txsRes.data);
+            setUsers(Array.isArray(usersRes.data) ? usersRes.data : []);
+            setTransactions(Array.isArray(txsRes.data) ? txsRes.data : []);
         } catch (err) {
             setError('Acceso denegado: Protocolo de seguridad Lumina-Admin no superado.');
             setTimeout(() => navigate('/dashboard'), 3000);
@@ -52,14 +52,14 @@ const AdminPanel = () => {
         fetchAdminData();
     }, []);
 
-    const totalFunds = users.reduce((acc, u) => acc + parseFloat(u.balance || 0), 0);
-    const weeklyVolume = transactions.reduce((acc, t) => acc + Math.abs(parseFloat(t.amount)), 0);
+    const totalFunds = (Array.isArray(users) ? users : []).reduce((acc, u) => acc + parseFloat(u.balance || 0), 0);
+    const weeklyVolume = (Array.isArray(transactions) ? transactions : []).reduce((acc, t) => acc + Math.abs(parseFloat(t.amount)), 0);
 
     if (error) {
         return (
             <div className="min-h-screen bg-[#020408] flex flex-col items-center justify-center p-8">
                 <div className="w-20 h-20 bg-red-500/10 rounded-full flex items-center justify-center text-red-500 mb-8 border border-red-500/20 animate-pulse">
-                    <Lock size={40} />
+                    <LockIcon size={40} />
                 </div>
                 <h2 className="text-3xl font-black mb-4 text-white tracking-tighter">{error}</h2>
                 <p className="text-slate-500 font-bold uppercase text-[10px] tracking-widest">Reconectando con el terminal de usuario...</p>

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, Wallet, History, ArrowUpRight, ArrowDownLeft, Calendar, User, Mail, Shield } from 'lucide-react';
+import { X, Wallet, History as HistoryIcon, ArrowUpRight, ArrowDownLeft, Calendar, User, Mail, Shield } from 'lucide-react';
 import api from '../utils/api';
 
 const UserDetailModal = ({ isOpen, onClose, userId }) => {
@@ -21,7 +21,7 @@ const UserDetailModal = ({ isOpen, onClose, userId }) => {
                 api.get(`/admin/users/${userId}/transactions`)
             ]);
             setDetails(detailsRes.data);
-            setTransactions(txsRes.data);
+            setTransactions(Array.isArray(txsRes.data) ? txsRes.data : []);
         } catch (err) {
             console.error('Error fetching user details:', err);
         } finally {
@@ -118,7 +118,7 @@ const UserDetailModal = ({ isOpen, onClose, userId }) => {
                             <div className="lg:col-span-2 space-y-6">
                                 <div className="flex justify-between items-center px-2">
                                     <h3 className="text-xs font-black uppercase tracking-widest text-slate-500 flex items-center gap-2">
-                                        <History size={14} /> Historial de Movimientos
+                                        <HistoryIcon size={14} /> Historial de Movimientos
                                     </h3>
                                     <span className="text-[10px] font-bold text-indigo-400">{transactions.length} registros</span>
                                 </div>
@@ -146,7 +146,7 @@ const UserDetailModal = ({ isOpen, onClose, userId }) => {
                                         ))
                                     ) : (
                                         <div className="p-12 text-center glass border-dashed border-2 border-white/5 flex flex-col items-center">
-                                            <History className="text-slate-700 mb-4" size={48} />
+                                            <HistoryIcon className="text-slate-700 mb-4" size={48} />
                                             <p className="text-slate-500 font-medium italic">Sin movimientos registrados aún</p>
                                         </div>
                                     )}
