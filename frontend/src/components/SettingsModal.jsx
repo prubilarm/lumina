@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, Settings, ShieldLock, User, Mail, Save, Key, AlertCircle, CheckCircle2, ShieldCheck, Zap } from 'lucide-react';
+import { X, Settings, ShieldAlert, User, Mail, Save, Key, AlertCircle, CheckCircle2, ShieldCheck, Zap, Lock } from 'lucide-react';
 import api from '../utils/api';
 import Swal from 'sweetalert2';
 
@@ -97,10 +97,10 @@ const SettingsModal = ({ isOpen, onClose, user, onUpdate }) => {
                             icon={<User size={18} />}
                             label="Perfil"
                         />
-                        <TabButton 
+                            <TabButton 
                             active={activeTab === 'security'} 
                             onClick={() => setActiveTab('security')}
-                            icon={<ShieldLock size={18} />}
+                            icon={<ShieldAlert size={18} />}
                             label="Seguridad"
                         />
                         <TabButton 
