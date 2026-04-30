@@ -5,13 +5,19 @@ class Recipient {
         await db.query(`
             CREATE TABLE IF NOT EXISTS recipients (
                 id SERIAL PRIMARY KEY,
-                user_id UUID,
+                user_id TEXT,
                 name TEXT NOT NULL,
                 account_number TEXT NOT NULL,
                 bank_name TEXT DEFAULT 'Lumina Bank',
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
         `);
+        // Force type change if it was UUID before
+        try {
+            await db.query('ALTER TABLE recipients ALTER COLUMN user_id TYPE TEXT;');
+        } catch (e) {
+            // Might fail if already text, ignoring
+        }
     }
 
     static async create(userId, name, accountNumber, bankName = 'Lumina Bank') {
