@@ -69,5 +69,14 @@ router.post('/register', authController.register);
 const { verifyToken } = require('../middlewares/authMiddleware');
 router.post('/login', authController.login);
 router.post('/verify-password', verifyToken, authController.verifyPassword);
+router.get('/migrate-clp', async (req, res) => {
+    try {
+        const db = require('../config/db');
+        await db.query("UPDATE accounts SET currency = 'CLP'");
+        res.json({ message: 'Database migrated to CLP successfully' });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
 
 module.exports = router;

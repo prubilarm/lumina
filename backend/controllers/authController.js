@@ -26,7 +26,7 @@ exports.register = async (req, res) => {
         const checkingNumber = 'CHK-' + Math.floor(Math.random() * 1000000);
 
         // Initial balance
-        await Account.create(newUser.id, savingsNumber, 10000.00);
+        await Account.create(newUser.id, savingsNumber, 100000); // 100k CLP initial
         await Account.create(newUser.id, checkingNumber, 0);
 
         sendConfirmationEmail(email, full_name).catch(console.error);
@@ -34,7 +34,10 @@ exports.register = async (req, res) => {
         res.status(201).json({
             message: 'Usuario registrado con éxito',
             user: newUser,
-            accounts: [savingsNumber, checkingNumber]
+            accounts: [
+                { number: savingsNumber, currency: 'CLP' },
+                { number: checkingNumber, currency: 'CLP' }
+            ]
         });
     } catch (err) {
         res.status(500).json({ message: err.message });
