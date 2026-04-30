@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const api = axios.create({
-  baseURL: '/api',
+  baseURL: 'https://lumina-api-ebon.vercel.app',
 });
 
 // Add token to requests
