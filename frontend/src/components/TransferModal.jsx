@@ -104,7 +104,7 @@ const TransferModal = ({ isOpen, onClose, onSuccess, accounts = [] }) => {
                   <div class="text-left space-y-4 p-4 bg-white/5 border border-white/10 rounded-2xl mt-4">
                     <div class="flex justify-between items-center border-b border-white/5 pb-3">
                         <span class="text-[10px] font-black text-slate-500 uppercase tracking-widest">Nº de Operación</span>
-                        <span class="text-[10px] font-mono text-cyan-400 font-bold">${tx.id.split('-')[0].toUpperCase()}</span>
+                        <span class="text-[10px] font-mono text-cyan-400 font-bold">${String(tx.id).includes('-') ? tx.id.split('-')[0].toUpperCase() : tx.id}</span>
                     </div>
                     <div class="flex justify-between items-center border-b border-white/5 pb-3">
                         <span class="text-[10px] font-black text-slate-500 uppercase tracking-widest">Monto Transferido</span>
