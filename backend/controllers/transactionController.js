@@ -52,8 +52,13 @@ exports.transfer = async (req, res) => {
             return res.status(401).json({ message: 'Cuenta de origen no válida' });
         }
 
-        if (senderAccount.balance < amount) {
-            return res.status(400).json({ message: 'Fondos insuficientes' });
+        const currentBalance = parseFloat(senderAccount.balance);
+        const transferAmount = parseFloat(amount);
+
+        console.log(`Transfer Attempt: Balance=${currentBalance}, Amount=${transferAmount}`);
+
+        if (currentBalance < transferAmount) {
+            return res.status(400).json({ message: `Fondos insuficientes. Saldo actual: $${currentBalance.toLocaleString('es-CL')}` });
         }
 
         // Get receiver account
