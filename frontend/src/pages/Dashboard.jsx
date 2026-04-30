@@ -18,14 +18,25 @@ import {
   MessageSquare
 } from 'lucide-react';
 import api from '../utils/api';
+import DepositModal from '../components/DepositModal';
+import TransferModal from '../components/TransferModal';
+import CardsModal from '../components/CardsModal';
+import InvestmentsModal from '../components/InvestmentsModal';
+import TransactionsModal from '../components/TransactionsModal';
 
 const Dashboard = () => {
   const [user, setUser] = useState(null);
   const [accounts, setAccounts] = useState([]);
+  const [transactions, setTransactions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [showComingSoon, setShowComingSoon] = useState(false);
   const [featureName, setFeatureName] = useState('');
+  const [isDepositOpen, setIsDepositOpen] = useState(false);
+  const [isTransferOpen, setIsTransferOpen] = useState(false);
+  const [isCardsOpen, setIsCardsOpen] = useState(false);
+  const [isInvestmentsOpen, setIsInvestmentsOpen] = useState(false);
+  const [isTransactionsOpen, setIsTransactionsOpen] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -36,6 +47,9 @@ const Dashboard = () => {
         
         const accountsResponse = await api.get('/user/balance');
         setAccounts(Array.isArray(accountsResponse.data) ? accountsResponse.data : []);
+
+        const txsResponse = await api.get('/transactions/history');
+        setTransactions(Array.isArray(txsResponse.data) ? txsResponse.data.slice(0, 5) : []);
       } catch (err) {
         console.error('Error fetching dashboard data:', err);
         setError('No se pudieron cargar los datos. Por favor, inicia sesión de nuevo.');
@@ -57,6 +71,26 @@ const Dashboard = () => {
   };
 
   const handleAction = (name) => {
+    if (name === 'transferencias') {
+      setIsTransferOpen(true);
+      return;
+    }
+    if (name === 'depositos') {
+      setIsDepositOpen(true);
+      return;
+    }
+    if (name === 'tarjetas') {
+      setIsCardsOpen(true);
+      return;
+    }
+    if (name === 'movimientos') {
+      setIsTransactionsOpen(true);
+      return;
+    }
+    if (name === 'inversiones') {
+      setIsInvestmentsOpen(true);
+      return;
+    }
     setFeatureName(name);
     setShowComingSoon(true);
     setTimeout(() => setShowComingSoon(false), 3000);
@@ -196,7 +230,10 @@ const Dashboard = () => {
                       ${mainAccount.balance.toLocaleString('es-CL')} <span className="text-xl text-indigo-200 font-medium ml-1">{mainAccount.currency}</span>
                     </h3>
                   </div>
-                  <button className="bg-white/20 hover:bg-white/30 backdrop-blur-md p-4 rounded-2xl transition-all">
+                  <button 
+                    onClick={() => handleAction('depositos')}
+                    className="bg-white/20 hover:bg-white/30 backdrop-blur-md p-4 rounded-2xl transition-all"
+                  >
                     <Plus className="text-white" />
                   </button>
                 </div>
@@ -265,16 +302,56 @@ const Dashboard = () => {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-white/5">
-                  <TableRow name="Apple Store" category="Tecnología" date="Hoy, 14:20" amount="- $1.200.000" type="expense" />
-                  <TableRow name="Transferencia Recibida" category="Depósito" date="Ayer, 09:15" amount="+ $500.000" type="income" />
-                  <TableRow name="Netflix Premium" category="Entretenimiento" date="28 Oct, 03:00" amount="- $12.900" type="expense" />
-                  <TableRow name="Pago de Nómina" category="Sueldo" date="25 Oct, 08:00" amount="+ $2.800.000" type="income" />
+                  {transactions.length > 0 ? (
+                    transactions.map((tx) => (
+                      <TableRow 
+                        key={tx.id}
+                        name={tx.description || (tx.type === 'transfer' ? 'Transferencia' : 'Depósito')}
+                        category={tx.type === 'transfer' ? 'Transferencia' : 'Depósito'}
+                        date={new Date(tx.created_at).toLocaleString('es-CL', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })}
+                        amount={`${tx.type === 'withdraw' || (tx.sender_id && tx.sender_id === accounts[0]?.id) ? '-' : '+'} $${parseFloat(tx.amount).toLocaleString('es-CL')}`}
+                        type={tx.type === 'withdraw' || (tx.sender_id && tx.sender_id === accounts[0]?.id) ? 'expense' : 'income'}
+                      />
+                    ))
+                  ) : (
+                    <tr>
+                      <td colSpan="4" className="px-8 py-10 text-center text-slate-500 font-medium">No se registran movimientos recientes</td>
+                    </tr>
+                  )}
                 </tbody>
               </table>
             </div>
           </div>
         </div>
       </main>
+
+      {/* Modals */}
+      <DepositModal 
+        isOpen={isDepositOpen} 
+        onClose={() => setIsDepositOpen(false)} 
+        onSuccess={() => window.location.reload()} 
+        accounts={accounts} 
+      />
+      <TransferModal 
+        isOpen={isTransferOpen} 
+        onClose={() => setIsTransferOpen(false)} 
+        onSuccess={() => window.location.reload()} 
+        accounts={accounts} 
+      />
+      <CardsModal 
+        isOpen={isCardsOpen} 
+        onClose={() => setIsCardsOpen(false)} 
+      />
+      <InvestmentsModal 
+        isOpen={isInvestmentsOpen} 
+        onClose={() => setIsInvestmentsOpen(false)} 
+      />
+      <TransactionsModal 
+        isOpen={isTransactionsOpen} 
+        onClose={() => setIsTransactionsOpen(false)} 
+        transactions={transactions}
+        accounts={accounts}
+      />
     </div>
   );
 };
