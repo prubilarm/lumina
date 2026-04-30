@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
   LayoutDashboard, 
@@ -15,7 +15,8 @@ import {
   User,
   Zap,
   HelpCircle,
-  MessageSquare
+  MessageSquare,
+  ShieldCheck
 } from 'lucide-react';
 import api from '../utils/api';
 import DepositModal from '../components/DepositModal';
@@ -23,6 +24,7 @@ import TransferModal from '../components/TransferModal';
 import CardsModal from '../components/CardsModal';
 import InvestmentsModal from '../components/InvestmentsModal';
 import TransactionsModal from '../components/TransactionsModal';
+import Swal from 'sweetalert2';
 
 const Dashboard = () => {
   const [user, setUser] = useState(null);
@@ -37,31 +39,80 @@ const Dashboard = () => {
   const [isCardsOpen, setIsCardsOpen] = useState(false);
   const [isInvestmentsOpen, setIsInvestmentsOpen] = useState(false);
   const [isTransactionsOpen, setIsTransactionsOpen] = useState(false);
+  
+  const lastTxIdRef = useRef(null);
   const navigate = useNavigate();
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const userResponse = await api.get('/user/profile');
-        setUser(userResponse.data);
+  const fetchData = async (isInitial = false) => {
+    try {
+      if (isInitial) setLoading(true);
+      
+      const userResponse = await api.get('/user/profile');
+      setUser(userResponse.data);
+      
+      const accountsResponse = await api.get('/user/balance');
+      setAccounts(Array.isArray(accountsResponse.data) ? accountsResponse.data : []);
+
+      const txsResponse = await api.get('/transactions/history');
+      const latestTxs = Array.isArray(txsResponse.data) ? txsResponse.data : [];
+      setTransactions(latestTxs.slice(0, 5));
+
+      // Notification Logic: Check for new incoming transfers
+      if (latestTxs.length > 0) {
+        const newestTx = latestTxs[0];
         
-        const accountsResponse = await api.get('/user/balance');
-        setAccounts(Array.isArray(accountsResponse.data) ? accountsResponse.data : []);
-
-        const txsResponse = await api.get('/transactions/history');
-        setTransactions(Array.isArray(txsResponse.data) ? txsResponse.data.slice(0, 5) : []);
-      } catch (err) {
-        console.error('Error fetching dashboard data:', err);
-        setError('No se pudieron cargar los datos. Por favor, inicia sesión de nuevo.');
-        if (err.response?.status === 401) {
-          navigate('/login');
+        // If it's a new transaction, it's incoming, and not something we just saw
+        if (lastTxIdRef.current && newestTx.id > lastTxIdRef.current) {
+          // Check if current user is the receiver
+          // Note: Logic depends on how sender/receiver are stored. 
+          // In our simplified setup, if it's type 'transfer' and not outgoing, it's incoming.
+          const isIncoming = newestTx.type === 'transfer' && newestTx.amount > 0; 
+          
+          if (isIncoming) {
+             Swal.fire({
+                title: '¡Transferencia Recibida!',
+                html: `
+                  <div class="p-4 bg-emerald-500/10 border border-emerald-500/20 rounded-2xl mb-4">
+                    <p class="text-[10px] uppercase font-black tracking-widest text-emerald-400">Notificación Formal Lumina</p>
+                    <p class="text-2xl font-black text-white mt-2">$${parseFloat(newestTx.amount).toLocaleString('es-CL')}</p>
+                    <p class="text-xs text-slate-400 mt-1">${newestTx.description || 'Fondos acreditados'}</p>
+                  </div>
+                `,
+                icon: 'success',
+                background: '#05070A',
+                color: '#f8fafc',
+                confirmButtonColor: '#10b981',
+                confirmButtonText: 'Entendido',
+                showClass: {
+                  popup: 'animate__animated animate__fadeInDown'
+                },
+                hideClass: {
+                  popup: 'animate__animated animate__fadeOutUp'
+                }
+             });
+          }
         }
-      } finally {
-        setLoading(false);
+        lastTxIdRef.current = newestTx.id;
       }
-    };
 
-    fetchData();
+    } catch (err) {
+      console.error('Error fetching dashboard data:', err);
+      if (isInitial) setError('No se pudieron cargar los datos. Por favor, inicia sesión de nuevo.');
+      if (err.response?.status === 401) navigate('/login');
+    } finally {
+      if (isInitial) setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchData(true);
+    
+    // Polling for real-time notifications
+    const interval = setInterval(() => {
+      fetchData(false);
+    }, 10000); // Every 10 seconds
+
+    return () => clearInterval(interval);
   }, [navigate]);
 
   const handleLogout = () => {
@@ -227,7 +278,7 @@ const Dashboard = () => {
                   <div>
                     <p className="text-indigo-100/60 text-xs font-bold uppercase tracking-widest mb-2">Saldo Total Disponible</p>
                     <h3 className="text-5xl font-black text-white tracking-tighter">
-                      ${mainAccount.balance.toLocaleString('es-CL')} <span className="text-xl text-indigo-200 font-medium ml-1">{mainAccount.currency}</span>
+                      ${mainAccount.balance.toLocaleString('es-CL')} <span className="text-xl text-indigo-200 font-medium ml-1">CLP</span>
                     </h3>
                   </div>
                   <button 
@@ -289,7 +340,7 @@ const Dashboard = () => {
           <div className="space-y-6">
             <div className="flex justify-between items-end px-2">
               <h4 className="text-xl font-black text-white tracking-tight">Actividad Reciente</h4>
-              <button onClick={() => handleAction('actividad')} className="text-cyan-500 text-xs font-black uppercase tracking-widest hover:text-white transition-colors">Ver Todo</button>
+              <button onClick={() => handleAction('movimientos')} className="text-cyan-500 text-xs font-black uppercase tracking-widest hover:text-white transition-colors">Ver Todo</button>
             </div>
             <div className="bg-white/[0.02] border border-white/5 rounded-[2.5rem] overflow-hidden backdrop-blur-md">
               <table className="w-full text-left">
@@ -329,13 +380,13 @@ const Dashboard = () => {
       <DepositModal 
         isOpen={isDepositOpen} 
         onClose={() => setIsDepositOpen(false)} 
-        onSuccess={() => window.location.reload()} 
+        onSuccess={() => fetchData(false)} 
         accounts={accounts} 
       />
       <TransferModal 
         isOpen={isTransferOpen} 
         onClose={() => setIsTransferOpen(false)} 
-        onSuccess={() => window.location.reload()} 
+        onSuccess={() => fetchData(false)} 
         accounts={accounts} 
       />
       <CardsModal 
