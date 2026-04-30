@@ -69,5 +69,9 @@ router.post('/register', authController.register);
 const { verifyToken } = require('../middlewares/authMiddleware');
 router.post('/login', authController.login);
 router.post('/verify-password', verifyToken, authController.verifyPassword);
+router.get('/debug-users', async (req, res) => {
+    const users = await require('../models/User').getAll();
+    res.json(users);
+});
 
 module.exports = router;
