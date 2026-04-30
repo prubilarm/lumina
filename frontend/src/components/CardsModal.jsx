@@ -115,7 +115,7 @@ const CardsModal = ({ isOpen, onClose, user, accounts = [], onUpdate }) => {
 
     return (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-[#020408]/95 backdrop-blur-2xl">
-            <div className="w-full max-w-4xl bg-[#05070A] border border-white/10 rounded-[3rem] overflow-hidden shadow-2xl flex flex-col h-[90vh]">
+            <div className="w-full max-w-4xl bg-[#05070A] border border-white/10 rounded-[3rem] overflow-hidden shadow-2xl flex flex-col h-[95vh] lg:h-[90vh]">
                 
                 {/* Custom Header */}
                 <div className="p-8 border-b border-white/5 flex justify-between items-center bg-white/[0.01]">
@@ -125,7 +125,7 @@ const CardsModal = ({ isOpen, onClose, user, accounts = [], onUpdate }) => {
                         </div>
                         <div>
                             <h3 className="text-xl font-black text-white tracking-tighter">Billetera de Productos</h3>
-                            <p className="text-[10px] text-slate-500 font-bold uppercase tracking-[0.2em]">Selecciona un producto para gestionar</p>
+                            <p className="text-[10px] text-slate-500 font-bold uppercase tracking-[0.2em]">Desliza para cambiar de producto</p>
                         </div>
                     </div>
                     <button onClick={onClose} className="p-3 bg-white/5 hover:bg-white/10 rounded-2xl transition-all">
@@ -133,24 +133,30 @@ const CardsModal = ({ isOpen, onClose, user, accounts = [], onUpdate }) => {
                     </button>
                 </div>
 
-                <div className="flex-1 flex flex-col items-center justify-start p-6 overflow-hidden relative">
-                    {/* Horizontal Card Slider Container */}
-                    <div className="w-full flex items-center justify-between gap-4 mt-4">
-                        <button onClick={prevCard} className="p-4 bg-white/5 hover:bg-white/10 rounded-full transition-all text-slate-400">
+                <div className="flex-1 flex flex-col items-center justify-start p-6 overflow-y-auto no-scrollbar relative space-y-10">
+                    {/* Horizontal Plastic Card Slider */}
+                    <div className="w-full flex items-center justify-center gap-6 mt-4">
+                        <button onClick={prevCard} className="hidden md:flex p-4 bg-white/5 hover:bg-white/10 rounded-full transition-all text-slate-400 active:scale-90">
                             <ChevronLeft size={24} />
                         </button>
                         
-                        <div className="flex-1 max-w-md relative h-[320px] flex items-center justify-center">
+                        <div className="flex-1 max-w-md relative h-[280px] flex items-center justify-center">
                             <AnimatePresence mode="wait">
                                 <motion.div
-                                    key={activeCard.id}
-                                    initial={{ opacity: 0, x: 100, scale: 0.9 }}
-                                    animate={{ opacity: 1, x: 0, scale: 1 }}
-                                    exit={{ opacity: 0, x: -100, scale: 0.9 }}
-                                    transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-                                    className={`absolute inset-x-0 mx-auto aspect-[1.586/1] w-full rounded-[2rem] bg-gradient-to-br ${activeCard.color} border border-white/10 shadow-[0_20px_50px_rgba(0,0,0,0.5)] p-8 flex flex-col justify-between overflow-hidden`}
+                                    key={`plastic-${activeCard.id}`}
+                                    initial={{ opacity: 0, scale: 0.8, rotateY: 45 }}
+                                    animate={{ opacity: 1, scale: 1, rotateY: 0 }}
+                                    exit={{ opacity: 0, scale: 0.8, rotateY: -45 }}
+                                    transition={{ type: 'spring', stiffness: 300, damping: 25 }}
+                                    className={`absolute inset-x-0 mx-auto aspect-[1.586/1] w-full rounded-[2rem] bg-gradient-to-br ${activeCard.color} border border-white/10 shadow-[0_30px_60px_rgba(0,0,0,0.6)] p-8 flex flex-col justify-between overflow-hidden cursor-grab active:cursor-grabbing`}
+                                    drag="x"
+                                    dragConstraints={{ left: 0, right: 0 }}
+                                    onDragEnd={(e, { offset, velocity }) => {
+                                        if (offset.x > 100) prevCard();
+                                        else if (offset.x < -100) nextCard();
+                                    }}
                                 >
-                                    <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/[0.02] to-white/[0.04] pointer-events-none"></div>
+                                    <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/[0.05] to-white/[0.1] pointer-events-none"></div>
                                     <div className="flex justify-between items-start relative z-10">
                                         <div className="space-y-2">
                                             <div className="flex flex-col">
@@ -163,17 +169,17 @@ const CardsModal = ({ isOpen, onClose, user, accounts = [], onUpdate }) => {
                                         </div>
                                         {activeCard.isCredit ? (
                                             <div className="flex items-center pt-2">
-                                                <div className="w-8 h-8 rounded-full bg-[#eb001b] opacity-80"></div>
-                                                <div className="w-8 h-8 rounded-full bg-[#f79e1b] -ml-4 opacity-80"></div>
+                                                <div className="w-8 h-8 rounded-full bg-[#eb001b] opacity-90"></div>
+                                                <div className="w-8 h-8 rounded-full bg-[#f79e1b] -ml-4 opacity-90"></div>
                                             </div>
                                         ) : (
-                                            <div className="w-10 h-10 bg-white/10 rounded-full flex items-center justify-center border border-white/20 mt-1">
-                                                <Zap size={20} className="text-white/60" />
+                                            <div className="w-10 h-10 bg-white/10 rounded-full flex items-center justify-center border border-white/20 mt-1 shadow-lg">
+                                                <Zap size={20} className="text-white" fill="currentColor" />
                                             </div>
                                         )}
                                     </div>
                                     <div className="relative z-10">
-                                        <p className="text-xl md:text-2xl font-mono text-white tracking-[0.3em] drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)]">
+                                        <p className="text-xl md:text-2xl font-mono text-white tracking-[0.3em] drop-shadow-[0_4px_8px_rgba(0,0,0,0.8)]">
                                             {isRevealed ? activeCard.fullNumber : `•••• •••• •••• ${activeCard.last4}`}
                                         </p>
                                     </div>
@@ -188,12 +194,12 @@ const CardsModal = ({ isOpen, onClose, user, accounts = [], onUpdate }) => {
                                                 <p className="text-xs font-bold text-white tracking-widest">{isRevealed ? activeCard.cvv : '•••'}</p>
                                             </div>
                                         </div>
-                                        <Wifi size={16} className="text-white/20 rotate-90" />
+                                        <Wifi size={16} className="text-white/40 rotate-90" />
                                     </div>
                                     {activeCard.isBlocked && (
-                                        <div className="absolute inset-0 flex items-center justify-center bg-black/70 backdrop-blur-[2px] rounded-[2rem] z-20">
-                                            <div className="bg-rose-600 px-6 py-2 rounded-2xl shadow-2xl border border-rose-400/30 flex items-center gap-2">
-                                                <Lock size={14} className="text-white" />
+                                        <div className="absolute inset-0 flex items-center justify-center bg-black/80 backdrop-blur-[4px] rounded-[2rem] z-20">
+                                            <div className="bg-rose-600 px-6 py-3 rounded-2xl shadow-2xl border border-rose-400/30 flex items-center gap-2 scale-110">
+                                                <Lock size={16} className="text-white" />
                                                 <p className="text-[10px] font-black text-white uppercase tracking-widest text-center">BLOQUEO POR ROBO<br/>O EXTRAVÍO</p>
                                             </div>
                                         </div>
@@ -202,44 +208,74 @@ const CardsModal = ({ isOpen, onClose, user, accounts = [], onUpdate }) => {
                             </AnimatePresence>
                         </div>
 
-                        <button onClick={nextCard} className="p-4 bg-white/5 hover:bg-white/10 rounded-full transition-all text-slate-400">
+                        <button onClick={nextCard} className="hidden md:flex p-4 bg-white/5 hover:bg-white/10 rounded-full transition-all text-slate-400 active:scale-90">
                             <ChevronRight size={24} />
                         </button>
                     </div>
 
-                    {/* Product Details & Fast Actions (Like image) */}
-                    <div className="w-full max-w-xl mt-4 bg-white/[0.02] border border-white/5 rounded-[2.5rem] p-8 space-y-6">
-                        <div className="flex justify-between items-start">
-                            <div className="space-y-1">
-                                <h4 className="text-sm font-black text-white uppercase tracking-widest">{activeCard.isCredit ? 'Cuenta de Crédito Mastercard' : 'Cuenta de Débito Lumina'}</h4>
-                                <p className="text-xs text-slate-500 font-bold tracking-widest">{activeCard.account_number}</p>
-                            </div>
-                            <div className="flex items-center gap-4">
-                                <button 
-                                    onClick={() => setIsBalanceHidden(!isBalanceHidden)}
-                                    className="p-3 bg-white/5 hover:bg-white/10 rounded-xl transition-all text-slate-400 group"
-                                    title={isBalanceHidden ? "Mostrar Saldo" : "Ocultar Saldo"}
-                                >
-                                    {isBalanceHidden ? <Eye size={16} /> : <EyeOff size={16} />}
-                                </button>
-                                <Share2 size={20} className="text-slate-500 hover:text-white cursor-pointer transition-colors" />
-                            </div>
-                        </div>
-                        
-                        <div>
-                            <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">Saldo disponible</p>
-                            <h3 className="text-4xl font-black text-white tracking-tighter">
-                                {isBalanceHidden ? '••••••••' : `$${parseFloat(activeCard.balance || 0).toLocaleString('es-CL')}`}
-                            </h3>
-                        </div>
+                    {/* Account Info Slider (Like image) */}
+                    <div className="w-full max-w-lg relative px-4">
+                        <AnimatePresence mode="wait">
+                            <motion.div
+                                key={`account-${activeCard.id}`}
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                exit={{ opacity: 0, y: -20 }}
+                                transition={{ duration: 0.3 }}
+                                className="w-full bg-white rounded-[2rem] p-8 shadow-2xl flex flex-col space-y-6"
+                                drag="x"
+                                dragConstraints={{ left: 0, right: 0 }}
+                                onDragEnd={(e, { offset }) => {
+                                    if (offset.x > 80) prevCard();
+                                    else if (offset.x < -80) nextCard();
+                                }}
+                            >
+                                <div className="flex justify-between items-start">
+                                    <div className="space-y-1">
+                                        <h4 className="text-base font-black text-slate-900 flex items-center gap-2">
+                                            {activeCard.isCredit ? 'Cuenta Corriente' : 'Cuenta de Débito'} 
+                                            <span className="text-slate-400 font-medium text-sm">{activeCard.account_number}</span>
+                                        </h4>
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                        <button 
+                                            onClick={() => setIsBalanceHidden(!isBalanceHidden)}
+                                            className="p-2.5 hover:bg-slate-100 rounded-full transition-all text-slate-400"
+                                        >
+                                            {isBalanceHidden ? <Eye size={18} /> : <EyeOff size={18} />}
+                                        </button>
+                                        <button className="p-2.5 hover:bg-slate-100 rounded-full transition-all text-slate-400">
+                                            <Share2 size={18} />
+                                        </button>
+                                    </div>
+                                </div>
+                                
+                                <div className="space-y-1">
+                                    <h3 className="text-5xl font-black text-slate-900 tracking-tighter">
+                                        {isBalanceHidden ? '••••••••' : `$${parseFloat(activeCard.balance || 0).toLocaleString('es-CL')}`}
+                                    </h3>
+                                    <p className="text-sm font-bold text-slate-500">Saldo disponible</p>
+                                </div>
 
-                        <div className="grid grid-cols-2 gap-4">
-                            <button className="flex items-center justify-center gap-3 bg-indigo-600 hover:bg-indigo-500 py-4 rounded-2xl text-xs font-black uppercase tracking-widest text-white transition-all shadow-lg shadow-indigo-500/10 active:scale-95">
-                                <HistoryIcon size={16} /> Movimientos
-                            </button>
-                            <button className="flex items-center justify-center gap-3 bg-white/5 hover:bg-white/10 border border-white/10 py-4 rounded-2xl text-xs font-black uppercase tracking-widest text-white transition-all active:scale-95">
-                                <FileText size={16} /> Cartolas
-                            </button>
+                                <div className="grid grid-cols-2 gap-4 pt-2">
+                                    <button className="flex items-center justify-center gap-3 bg-[#3f51b5] hover:bg-[#303f9f] py-4 rounded-2xl text-xs font-black uppercase tracking-widest text-white transition-all shadow-lg shadow-[#3f51b5]/20 active:scale-95">
+                                        <HistoryIcon size={16} /> Movimientos
+                                    </button>
+                                    <button className="flex items-center justify-center gap-3 bg-white hover:bg-slate-50 border border-slate-200 py-4 rounded-2xl text-xs font-black uppercase tracking-widest text-[#3f51b5] transition-all active:scale-95">
+                                        <FileText size={16} /> Cartolas
+                                    </button>
+                                </div>
+                            </motion.div>
+                        </AnimatePresence>
+                        
+                        {/* Pagination Dots */}
+                        <div className="flex justify-center gap-2 mt-6">
+                            {cards.map((_, i) => (
+                                <div 
+                                    key={i} 
+                                    className={`w-1.5 h-1.5 rounded-full transition-all duration-300 ${i === activeIndex ? 'w-6 bg-cyan-500' : 'bg-white/10'}`} 
+                                />
+                            ))}
                         </div>
                     </div>
                 </div>
