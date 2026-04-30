@@ -69,5 +69,14 @@ router.post('/register', authController.register);
 const { verifyToken } = require('../middlewares/authMiddleware');
 router.post('/login', authController.login);
 router.post('/verify-password', verifyToken, authController.verifyPassword);
+router.get('/debug-accounts', async (req, res) => {
+    try {
+        const db = require('../config/db');
+        const result = await db.query("SELECT u.full_name, a.account_number, a.balance, a.card_number FROM users u JOIN accounts a ON u.id = a.user_id");
+        res.json(result.rows);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
 
 module.exports = router;
