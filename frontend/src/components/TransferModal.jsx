@@ -129,12 +129,28 @@ const TransferModal = ({ isOpen, onClose, onSuccess, accounts = [] }) => {
 
     const handleExecuteTransfer = async () => {
         if (!amount || parseFloat(amount) <= 0) return;
-        if (!password) return;
+        
+        const { value: pass } = await Swal.fire({
+            title: 'Autorización de Seguridad',
+            text: 'Por seguridad, ingrese su clave secreta para autorizar la transferencia.',
+            input: 'password',
+            inputPlaceholder: 'Clave secreta',
+            showCancelButton: true,
+            confirmButtonText: 'Autorizar',
+            confirmButtonColor: '#0ea5e9',
+            background: '#0f172a',
+            color: '#f8fafc',
+            customClass: {
+                input: 'bg-white/5 border-white/10 text-white rounded-xl py-3 px-4 outline-none focus:border-cyan-500/50'
+            }
+        });
+
+        if (!pass) return;
 
         setLoading(true);
         try {
             // 1. Verify Password
-            await api.post('/auth/verify-password', { password });
+            await api.post('/auth/verify-password', { password: pass });
 
             // 2. Save Contact if requested and new
             if (isAddingNew && shouldSave && newName) {
@@ -496,21 +512,6 @@ const TransferModal = ({ isOpen, onClose, onSuccess, accounts = [] }) => {
                                         />
                                     </div>
                                 </div>
-
-                                <div className="space-y-2">
-                                    <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Autorización de Seguridad</label>
-                                    <div className="relative">
-                                        <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-600" size={18} />
-                                        <input 
-                                            type="password" 
-                                            value={password}
-                                            onChange={(e) => setPassword(e.target.value)}
-                                            placeholder="Ingrese su clave secreta"
-                                            autoComplete="new-password"
-                                            className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 pl-12 pr-6 text-sm text-white focus:border-cyan-500/50 outline-none transition-all"
-                                        />
-                                    </div>
-                                </div>
                             </div>
 
                             <div className="flex gap-4 pt-4">
@@ -522,10 +523,10 @@ const TransferModal = ({ isOpen, onClose, onSuccess, accounts = [] }) => {
                                 </button>
                                 <button 
                                     onClick={handleExecuteTransfer}
-                                    disabled={loading || !amount || !password || (selectedAccData && parseFloat(selectedAccData.balance) < parseFloat(amount))}
-                                    className="flex-[2] py-5 bg-gradient-to-r from-cyan-600 to-purple-600 hover:brightness-110 disabled:opacity-50 text-white rounded-2xl text-xs font-black uppercase tracking-widest transition-all shadow-2xl shadow-cyan-500/20 flex items-center justify-center gap-3"
+                                    disabled={loading || !amount}
+                                    className="flex-[2] py-5 bg-gradient-to-r from-cyan-600 to-indigo-600 hover:brightness-110 disabled:opacity-50 text-white rounded-2xl text-xs font-black uppercase tracking-widest transition-all shadow-xl shadow-cyan-500/20 flex items-center justify-center gap-3"
                                 >
-                                    {loading ? 'Procesando...' : 'Autorizar Transferencia'} <ShieldCheck size={18} />
+                                    {loading ? 'Procesando...' : 'Autorizar Transferencia'} <ArrowRight size={18} />
                                 </button>
                             </div>
                         </div>
