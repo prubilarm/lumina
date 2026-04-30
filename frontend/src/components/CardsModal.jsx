@@ -33,20 +33,21 @@ const CardsModal = ({ isOpen, onClose, user, accounts = [], onUpdate }) => {
     if (!isOpen) return null;
 
     const cards = accounts.map((acc, index) => {
-        const isVisa = index % 2 === 0;
+        const isCredit = index === 0;
         const fullNumber = acc.card_number || '4532 0000 0000 0000';
         return {
             id: acc.id,
-            type: isVisa ? 'Visa Infinite' : 'Mastercard World Elite',
-            brand: isVisa ? 'VISA' : 'MASTERCARD',
+            label: isCredit ? 'Tarjeta de Crédito' : 'Tarjeta de Débito',
+            brand: isCredit ? 'Mastercard' : 'Lumina Debit',
             last4: fullNumber.slice(-4),
             fullNumber: fullNumber,
             expiry: '12/28',
             cvv: '842',
             isBlocked: acc.is_blocked,
-            color: isVisa 
-                ? 'from-slate-900 via-slate-800 to-slate-950' 
-                : 'from-indigo-950 via-purple-900 to-slate-900'
+            isCredit: isCredit,
+            color: isCredit 
+                ? 'from-[#1a1a1a] via-[#333333] to-[#000000]' // Onyx Black
+                : 'from-[#0f172a] via-[#1e293b] to-[#020617]' // Deep Navy
         };
     });
 
@@ -70,15 +71,6 @@ const CardsModal = ({ isOpen, onClose, user, accounts = [], onUpdate }) => {
             try {
                 await api.post('/auth/verify-password', { password });
                 setIsRevealed(true);
-                Swal.fire({
-                    icon: 'success',
-                    title: 'Datos Revelados',
-                    text: 'Los datos estarán visibles por 3 minutos.',
-                    timer: 2000,
-                    showConfirmButton: false,
-                    background: '#0f172a',
-                    color: '#f8fafc'
-                });
             } catch (err) {
                 Swal.fire({ icon: 'error', title: 'Error', text: 'Contraseña incorrecta', background: '#0f172a', color: '#f8fafc' });
             }
@@ -125,11 +117,11 @@ const CardsModal = ({ isOpen, onClose, user, accounts = [], onUpdate }) => {
                             <CreditCard size={24} />
                         </div>
                         <div>
-                            <h3 className="text-xl font-black text-white tracking-tighter">Centro de Seguridad</h3>
+                            <h3 className="text-xl font-black text-white tracking-tighter">Billetera Digital</h3>
                             {isRevealed && (
                                 <div className="flex items-center gap-2 mt-1">
                                     <div className="w-1.5 h-1.5 bg-rose-500 rounded-full animate-pulse" />
-                                    <p className="text-[10px] text-rose-400 font-black uppercase tracking-widest">Auto-ocultado en: {formatTime(timer)}</p>
+                                    <p className="text-[10px] text-rose-400 font-black uppercase tracking-widest">Exposición segura: {formatTime(timer)}</p>
                                 </div>
                             )}
                         </div>
@@ -156,25 +148,42 @@ const CardsModal = ({ isOpen, onClose, user, accounts = [], onUpdate }) => {
                                                 y: position * -40,
                                                 opacity: 1 - position * 0.4,
                                                 zIndex: cards.length - position,
-                                                filter: card.isBlocked ? 'grayscale(1) brightness(0.5)' : 'none'
+                                                filter: card.isBlocked ? 'grayscale(0.8) brightness(0.6)' : 'none'
                                             }}
                                             transition={{ type: 'spring', stiffness: 300, damping: 30 }}
                                             onClick={() => setActiveIndex(index)}
-                                            className={`absolute inset-0 aspect-[1.586/1] w-full rounded-[2.5rem] bg-gradient-to-br ${card.color} border border-white/10 shadow-2xl p-10 flex flex-col justify-between cursor-pointer group preserve-3d`}
+                                            className={`absolute inset-0 aspect-[1.586/1] w-full rounded-[2rem] bg-gradient-to-br ${card.color} border border-white/10 shadow-2xl p-10 flex flex-col justify-between cursor-pointer overflow-hidden group`}
                                             style={{ height: 'fit-content' }}
                                         >
+                                            {/* Reflection Effect */}
+                                            <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/[0.03] to-white/[0.05] pointer-events-none"></div>
+                                            
                                             <div className="flex justify-between items-start relative z-10">
-                                                <div className="space-y-1">
-                                                    <p className="text-[9px] font-black text-white/40 uppercase tracking-[0.3em] italic">{card.type}</p>
-                                                    <div className="w-12 h-10 bg-gradient-to-br from-yellow-200 via-yellow-500 to-yellow-200 rounded-lg shadow-inner mt-4"></div>
+                                                <div className="space-y-4">
+                                                    <div className="flex flex-col">
+                                                        <span className="text-[10px] font-black text-white/40 uppercase tracking-[0.2em]">{card.label}</span>
+                                                        <span className="text-lg font-black text-white tracking-tighter italic">Lumina Bank</span>
+                                                    </div>
+                                                    {/* Security Chip */}
+                                                    <div className="w-14 h-10 bg-gradient-to-br from-yellow-100 via-yellow-400 to-yellow-600 rounded-lg shadow-inner relative overflow-hidden">
+                                                        <div className="absolute inset-0 opacity-20 bg-[repeating-linear-gradient(45deg,transparent,transparent_2px,black_2px,black_4px)]"></div>
+                                                    </div>
                                                 </div>
-                                                <div className="text-right italic font-black text-white text-xl opacity-60">
-                                                    {card.brand}
-                                                </div>
+                                                
+                                                {card.isCredit ? (
+                                                    <div className="flex items-center">
+                                                        <div className="w-10 h-10 rounded-full bg-[#eb001b] opacity-80"></div>
+                                                        <div className="w-10 h-10 rounded-full bg-[#f79e1b] -ml-5 opacity-80"></div>
+                                                    </div>
+                                                ) : (
+                                                    <div className="w-12 h-12 bg-white/10 rounded-full flex items-center justify-center border border-white/20">
+                                                        <Zap size={24} className="text-white/60" />
+                                                    </div>
+                                                )}
                                             </div>
 
-                                            <div className="relative z-10 my-8">
-                                                <p className="text-2xl md:text-3xl font-mono text-white tracking-[0.25em]">
+                                            <div className="relative z-10 my-6">
+                                                <p className="text-2xl md:text-3xl font-mono text-white tracking-[0.25em] drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)]">
                                                     {isRevealed ? card.fullNumber : `•••• •••• •••• ${card.last4}`}
                                                 </p>
                                             </div>
@@ -182,21 +191,25 @@ const CardsModal = ({ isOpen, onClose, user, accounts = [], onUpdate }) => {
                                             <div className="flex justify-between items-end relative z-10">
                                                 <div className="flex gap-10">
                                                     <div>
-                                                        <p className="text-[7px] font-black uppercase text-white/30 tracking-widest mb-1">Expira</p>
-                                                        <p className="text-sm font-bold text-white">{isRevealed ? card.expiry : '•• / ••'}</p>
+                                                        <p className="text-[7px] font-black uppercase text-white/30 tracking-widest mb-1">VALID THRU</p>
+                                                        <p className="text-sm font-bold text-white shadow-sm">{isRevealed ? card.expiry : '•• / ••'}</p>
                                                     </div>
                                                     <div>
-                                                        <p className="text-[7px] font-black uppercase text-white/30 tracking-widest mb-1">CVV</p>
+                                                        <p className="text-[7px] font-black uppercase text-white/30 tracking-widest mb-1">SECURE CODE</p>
                                                         <p className="text-sm font-bold text-white tracking-widest">{isRevealed ? card.cvv : '•••'}</p>
                                                     </div>
                                                 </div>
-                                                {card.isBlocked ? <ShieldAlert className="text-rose-500" /> : <Wifi size={20} className="text-white/20 rotate-90" />}
+                                                <div className="flex flex-col items-end">
+                                                    <span className="text-[8px] font-black text-white/20 uppercase tracking-[0.2em] mb-1">Contactless</span>
+                                                    <Wifi size={18} className="text-white/20 rotate-90" />
+                                                </div>
                                             </div>
 
                                             {card.isBlocked && (
-                                                <div className="absolute inset-0 flex items-center justify-center bg-black/40 backdrop-blur-[2px] rounded-[2.5rem] z-20">
-                                                    <div className="bg-rose-600 px-6 py-2 rounded-full shadow-2xl">
-                                                        <p className="text-[10px] font-black text-white uppercase tracking-widest">Tarjeta Bloqueada</p>
+                                                <div className="absolute inset-0 flex items-center justify-center bg-black/60 backdrop-blur-[1px] rounded-[2rem] z-20">
+                                                    <div className="bg-rose-600 px-8 py-3 rounded-2xl shadow-2xl border border-rose-400/30 flex items-center gap-3">
+                                                        <Lock size={16} className="text-white" />
+                                                        <p className="text-[11px] font-black text-white uppercase tracking-widest">Tarjeta Suspendida</p>
                                                     </div>
                                                 </div>
                                             )}
@@ -213,12 +226,12 @@ const CardsModal = ({ isOpen, onClose, user, accounts = [], onUpdate }) => {
                 <div className="p-8 border-t border-white/5 bg-white/[0.01] flex flex-col gap-6">
                     <div className="flex justify-between items-center px-4">
                         <div className="flex flex-col">
-                            <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Titular</span>
-                            <span className="text-sm font-black text-white uppercase tracking-tight">{user?.full_name}</span>
+                            <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Tarjeta Seleccionada</span>
+                            <span className="text-sm font-black text-white uppercase tracking-tight">{activeCard?.brand} • {activeCard?.label}</span>
                         </div>
                         <div className="flex items-center gap-3 bg-white/5 px-4 py-2 rounded-xl border border-white/10">
                             <Info size={14} className="text-cyan-400" />
-                            <p className="text-[9px] text-slate-400 font-bold uppercase tracking-widest">Haz clic en la tarjeta de atrás para cambiar el foco</p>
+                            <p className="text-[9px] text-slate-400 font-bold uppercase tracking-widest">Desliza o haz clic para cambiar de tarjeta</p>
                         </div>
                     </div>
                     
@@ -227,7 +240,7 @@ const CardsModal = ({ isOpen, onClose, user, accounts = [], onUpdate }) => {
                             onClick={handleViewData}
                             className={`flex-1 py-5 rounded-2xl text-[11px] font-black uppercase tracking-widest transition-all flex items-center justify-center gap-3 ${isRevealed ? 'bg-cyan-500/10 text-cyan-400 border border-cyan-500/30' : 'bg-white/5 text-white border border-white/10 hover:bg-white/10'}`}
                         >
-                            {isRevealed ? <EyeOff size={18} /> : <Eye size={18} />} {isRevealed ? 'Ocultar datos' : 'Ver datos'}
+                            {isRevealed ? <EyeOff size={18} /> : <Eye size={18} />} {isRevealed ? 'Ocultar Información' : 'Ver Datos Sensibles'}
                         </button>
                         
                         {!activeCard?.isBlocked ? (
@@ -235,14 +248,14 @@ const CardsModal = ({ isOpen, onClose, user, accounts = [], onUpdate }) => {
                                 onClick={() => handleBlockCard(activeCard.id)}
                                 className="flex-1 py-5 bg-gradient-to-r from-rose-600 to-rose-700 hover:brightness-110 rounded-2xl text-[11px] font-black uppercase tracking-widest text-white shadow-xl shadow-rose-500/10 flex items-center justify-center gap-3"
                             >
-                                <Lock size={18} /> Bloquear Tarjeta
+                                <Lock size={18} /> Suspender Tarjeta
                             </button>
                         ) : (
                             <button 
                                 disabled
                                 className="flex-1 py-5 bg-white/5 border border-white/10 opacity-50 rounded-2xl text-[11px] font-black uppercase tracking-widest text-slate-500 flex items-center justify-center gap-3 cursor-not-allowed"
                             >
-                                <ShieldAlert size={18} /> Solo Admin Desbloquea
+                                <ShieldAlert size={18} /> Solo Administrador puede Habilitar
                             </button>
                         )}
                     </div>
