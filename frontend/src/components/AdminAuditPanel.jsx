@@ -9,6 +9,7 @@ const AdminAuditPanel = ({ isOpen, onClose }) => {
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedUser, setSelectedUser] = useState(null);
+    const [selectedAccount, setSelectedAccount] = useState(null);
     const [userHistory, setUserHistory] = useState([]);
     const [historyLoading, setHistoryLoading] = useState(false);
 
@@ -44,7 +45,12 @@ const AdminAuditPanel = ({ isOpen, onClose }) => {
 
     const handleSelectUser = (user) => {
         setSelectedUser(user);
+        setSelectedAccount(null); // Reset account filter when user changes
         fetchUserHistory(user.id);
+    };
+
+    const handleSelectAccount = (accountId) => {
+        setSelectedAccount(accountId);
     };
 
     const handleUnblock = async (accountId) => {
@@ -79,6 +85,10 @@ const AdminAuditPanel = ({ isOpen, onClose }) => {
         u.full_name?.toLowerCase().includes(searchTerm.toLowerCase()) || 
         u.email?.toLowerCase().includes(searchTerm.toLowerCase())
     );
+
+    const filteredHistory = selectedAccount 
+        ? userHistory.filter(tx => tx.sender_account_id === selectedAccount || tx.receiver_account_id === selectedAccount)
+        : userHistory;
 
     return (
         <div className="fixed inset-0 z-[110] flex items-center justify-center p-6 bg-[#020408]/98 backdrop-blur-2xl">
@@ -190,10 +200,14 @@ const AdminAuditPanel = ({ isOpen, onClose }) => {
                                             </div>
                                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                                 {selectedUser.accounts?.map(acc => (
-                                                    <div key={acc.id} className="bg-white/[0.03] border border-white/10 rounded-3xl p-8 relative group overflow-hidden">
+                                                    <div 
+                                                        key={acc.id} 
+                                                        onClick={() => handleSelectAccount(acc.id)}
+                                                        className={`border rounded-3xl p-8 relative group overflow-hidden cursor-pointer transition-all ${selectedAccount === acc.id ? 'bg-purple-500/10 border-purple-500/50' : 'bg-white/[0.03] border-white/10 hover:border-white/20'}`}
+                                                    >
                                                         <div className="flex justify-between items-start mb-6">
                                                             <div>
-                                                                <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-1">Cuenta Corriente</p>
+                                                                <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-1">Número de Cuenta</p>
                                                                 <p className="text-lg font-mono text-white font-black tracking-widest">{acc.account_number}</p>
                                                             </div>
                                                             <div className={`px-4 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest ${acc.is_blocked ? 'bg-rose-500/20 text-rose-400 border border-rose-500/20' : 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/20'}`}>
@@ -206,15 +220,22 @@ const AdminAuditPanel = ({ isOpen, onClose }) => {
                                                                 <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-1">Saldo Disponible</p>
                                                                 <p className="text-2xl font-black text-white tracking-tight">${parseFloat(acc.balance || 0).toLocaleString('es-CL')}</p>
                                                             </div>
-                                                            {acc.is_blocked && (
-                                                                <button 
-                                                                    onClick={() => handleUnblock(acc.id)}
-                                                                    className="p-3 bg-emerald-500 hover:bg-emerald-400 text-[#020408] rounded-xl transition-all shadow-xl shadow-emerald-500/20 flex items-center gap-2 text-[10px] font-black uppercase tracking-widest"
-                                                                >
-                                                                    <Unlock size={14} /> Habilitar
-                                                                </button>
-                                                            )}
+                                                            <div className="flex flex-col gap-2">
+                                                                {acc.is_blocked && (
+                                                                    <button 
+                                                                        onClick={(e) => { e.stopPropagation(); handleUnblock(acc.id); }}
+                                                                        className="p-3 bg-emerald-500 hover:bg-emerald-400 text-[#020408] rounded-xl transition-all shadow-xl shadow-emerald-500/20 flex items-center gap-2 text-[10px] font-black uppercase tracking-widest"
+                                                                    >
+                                                                        <Unlock size={14} /> Habilitar
+                                                                    </button>
+                                                                )}
+                                                            </div>
                                                         </div>
+                                                        {selectedAccount === acc.id && (
+                                                            <div className="absolute top-4 right-4 text-purple-400">
+                                                                <Eye size={16} />
+                                                            </div>
+                                                        )}
                                                     </div>
                                                 ))}
                                             </div>
@@ -222,9 +243,21 @@ const AdminAuditPanel = ({ isOpen, onClose }) => {
 
                                         {/* Transaction History */}
                                         <div className="space-y-6">
-                                            <div className="flex items-center gap-3">
-                                                <History size={18} className="text-purple-400" />
-                                                <h4 className="text-xs font-black text-slate-400 uppercase tracking-widest">Historial de Auditoría (Transacciones)</h4>
+                                            <div className="flex items-center justify-between">
+                                                <div className="flex items-center gap-3">
+                                                    <History size={18} className="text-purple-400" />
+                                                    <h4 className="text-xs font-black text-slate-400 uppercase tracking-widest">
+                                                        {selectedAccount ? 'Movimientos del Producto Seleccionado' : 'Historial General del Usuario'}
+                                                    </h4>
+                                                </div>
+                                                {selectedAccount && (
+                                                    <button 
+                                                        onClick={() => setSelectedAccount(null)}
+                                                        className="text-[10px] font-black text-purple-400 uppercase tracking-widest hover:text-white transition-colors"
+                                                    >
+                                                        Ver Historial General
+                                                    </button>
+                                                )}
                                             </div>
                                             <div className="bg-black/40 rounded-[2rem] border border-white/5 overflow-hidden">
                                                 <table className="w-full text-left">
@@ -243,8 +276,8 @@ const AdminAuditPanel = ({ isOpen, onClose }) => {
                                                                     <div className="w-6 h-6 border-2 border-purple-500/20 border-t-purple-500 rounded-full animate-spin mx-auto"></div>
                                                                 </td>
                                                             </tr>
-                                                        ) : userHistory.length > 0 ? (
-                                                            userHistory.map(tx => (
+                                                        ) : filteredHistory.length > 0 ? (
+                                                            filteredHistory.map(tx => (
                                                                 <tr key={tx.id} className="hover:bg-white/[0.02] transition-colors">
                                                                     <td className="px-8 py-5 text-[10px] font-mono text-slate-400">{new Date(tx.created_at).toLocaleString('es-CL')}</td>
                                                                     <td className="px-8 py-5 text-[11px] font-bold text-white">{tx.description}</td>
@@ -260,7 +293,14 @@ const AdminAuditPanel = ({ isOpen, onClose }) => {
                                                             ))
                                                         ) : (
                                                             <tr>
-                                                                <td colSpan="4" className="px-8 py-10 text-center text-[10px] font-black text-slate-600 uppercase tracking-widest">No se registran operaciones</td>
+                                                                <td colSpan="4" className="px-8 py-20 text-center">
+                                                                    <div className="flex flex-col items-center gap-4">
+                                                                        <div className="w-12 h-12 bg-white/5 rounded-full flex items-center justify-center text-slate-700">
+                                                                            <Info size={24} />
+                                                                        </div>
+                                                                        <p className="text-[10px] font-black text-slate-600 uppercase tracking-widest">Sin movimientos registrados para este producto</p>
+                                                                    </div>
+                                                                </td>
                                                             </tr>
                                                         )}
                                                     </tbody>
