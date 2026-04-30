@@ -218,7 +218,7 @@ const TransferModal = ({ isOpen, onClose, onSuccess, accounts }) => {
                                         >
                                             {accounts.map(acc => (
                                                 <option key={acc.id} value={acc.account_number} className="bg-[#0f172a]">
-                                                    {acc.account_number} (${parseFloat(acc.balance).toLocaleString('es-CL')})
+                                                    {acc.account_number.startsWith('SAV') ? 'Ahorros' : 'Corriente'} - {acc.account_number} (${parseFloat(acc.balance).toLocaleString('es-CL')})
                                                 </option>
                                             ))}
                                         </select>
@@ -259,6 +259,15 @@ const TransferModal = ({ isOpen, onClose, onSuccess, accounts }) => {
                                         <p className="text-[8px] font-black text-slate-600 uppercase tracking-widest mb-1">Banco</p>
                                         <p className="text-xs font-bold text-white">{recipient.bank}</p>
                                     </div>
+                                </div>
+                                <div className="flex items-center justify-between px-4 py-3 bg-white/5 border border-white/5 rounded-2xl">
+                                    <div className="flex items-center gap-3">
+                                        <Wallet size={16} className="text-slate-500" />
+                                        <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Saldo Disponible (Origen)</span>
+                                    </div>
+                                    <span className="text-xs font-black text-white">
+                                        ${parseFloat(accounts.find(a => a.account_number === senderAccount)?.balance || 0).toLocaleString('es-CL')}
+                                    </span>
                                 </div>
                             </div>
 
