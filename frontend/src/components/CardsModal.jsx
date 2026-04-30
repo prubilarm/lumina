@@ -131,9 +131,9 @@ const CardsModal = ({ isOpen, onClose, user, accounts = [], onUpdate }) => {
                     </button>
                 </div>
 
-                <div className="flex-1 flex flex-col items-center justify-center p-10 overflow-hidden relative">
+                <div className="flex-1 flex flex-col items-center justify-center p-6 overflow-hidden relative">
                     {cards.length > 0 ? (
-                        <div className="relative w-full max-w-md h-[400px] flex items-center justify-center">
+                        <div className="relative w-full max-w-md h-[450px] flex items-center justify-center">
                             <AnimatePresence initial={false}>
                                 {cards.map((card, index) => {
                                     const isActive = activeIndex === index;
@@ -145,71 +145,71 @@ const CardsModal = ({ isOpen, onClose, user, accounts = [], onUpdate }) => {
                                             layout
                                             animate={{ 
                                                 scale: 1 - position * 0.08,
-                                                y: position * -40,
+                                                y: position * -50,
                                                 opacity: 1 - position * 0.4,
                                                 zIndex: cards.length - position,
                                                 filter: card.isBlocked ? 'grayscale(0.8) brightness(0.6)' : 'none'
                                             }}
                                             transition={{ type: 'spring', stiffness: 300, damping: 30 }}
                                             onClick={() => setActiveIndex(index)}
-                                            className={`absolute inset-0 aspect-[1.586/1] w-full rounded-[2rem] bg-gradient-to-br ${card.color} border border-white/10 shadow-2xl p-10 flex flex-col justify-between cursor-pointer overflow-hidden group`}
-                                            style={{ height: 'fit-content' }}
+                                            className={`absolute inset-x-0 mx-auto aspect-[1.586/1] w-full rounded-[2rem] bg-gradient-to-br ${card.color} border border-white/10 shadow-2xl p-8 flex flex-col justify-between cursor-pointer overflow-hidden group`}
+                                            style={{ height: 'auto', top: '20px' }}
                                         >
                                             {/* Reflection Effect */}
                                             <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/[0.03] to-white/[0.05] pointer-events-none"></div>
                                             
                                             <div className="flex justify-between items-start relative z-10">
-                                                <div className="space-y-4">
+                                                <div className="space-y-3">
                                                     <div className="flex flex-col">
-                                                        <span className="text-[10px] font-black text-white/40 uppercase tracking-[0.2em]">{card.label}</span>
-                                                        <span className="text-lg font-black text-white tracking-tighter italic">Lumina Bank</span>
+                                                        <span className="text-[9px] font-black text-white/40 uppercase tracking-[0.2em]">{card.label}</span>
+                                                        <span className="text-base font-black text-white tracking-tighter italic">Lumina Bank</span>
                                                     </div>
                                                     {/* Security Chip */}
-                                                    <div className="w-14 h-10 bg-gradient-to-br from-yellow-100 via-yellow-400 to-yellow-600 rounded-lg shadow-inner relative overflow-hidden">
+                                                    <div className="w-12 h-9 bg-gradient-to-br from-yellow-100 via-yellow-400 to-yellow-600 rounded-lg shadow-inner relative overflow-hidden">
                                                         <div className="absolute inset-0 opacity-20 bg-[repeating-linear-gradient(45deg,transparent,transparent_2px,black_2px,black_4px)]"></div>
                                                     </div>
                                                 </div>
                                                 
                                                 {card.isCredit ? (
-                                                    <div className="flex items-center">
-                                                        <div className="w-10 h-10 rounded-full bg-[#eb001b] opacity-80"></div>
-                                                        <div className="w-10 h-10 rounded-full bg-[#f79e1b] -ml-5 opacity-80"></div>
+                                                    <div className="flex items-center pt-2">
+                                                        <div className="w-8 h-8 rounded-full bg-[#eb001b] opacity-80"></div>
+                                                        <div className="w-8 h-8 rounded-full bg-[#f79e1b] -ml-4 opacity-80"></div>
                                                     </div>
                                                 ) : (
-                                                    <div className="w-12 h-12 bg-white/10 rounded-full flex items-center justify-center border border-white/20">
-                                                        <Zap size={24} className="text-white/60" />
+                                                    <div className="w-10 h-10 bg-white/10 rounded-full flex items-center justify-center border border-white/20 mt-1">
+                                                        <Zap size={20} className="text-white/60" />
                                                     </div>
                                                 )}
                                             </div>
 
-                                            <div className="relative z-10 my-6">
-                                                <p className="text-2xl md:text-3xl font-mono text-white tracking-[0.25em] drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)]">
+                                            <div className="relative z-10 my-4">
+                                                <p className="text-xl md:text-2xl font-mono text-white tracking-[0.3em] drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)] text-center lg:text-left">
                                                     {isRevealed ? card.fullNumber : `•••• •••• •••• ${card.last4}`}
                                                 </p>
                                             </div>
 
                                             <div className="flex justify-between items-end relative z-10">
-                                                <div className="flex gap-10">
+                                                <div className="flex gap-8">
                                                     <div>
                                                         <p className="text-[7px] font-black uppercase text-white/30 tracking-widest mb-1">VALID THRU</p>
-                                                        <p className="text-sm font-bold text-white shadow-sm">{isRevealed ? card.expiry : '•• / ••'}</p>
+                                                        <p className="text-xs font-bold text-white shadow-sm">{isRevealed ? card.expiry : '•• / ••'}</p>
                                                     </div>
                                                     <div>
                                                         <p className="text-[7px] font-black uppercase text-white/30 tracking-widest mb-1">SECURE CODE</p>
-                                                        <p className="text-sm font-bold text-white tracking-widest">{isRevealed ? card.cvv : '•••'}</p>
+                                                        <p className="text-xs font-bold text-white tracking-widest">{isRevealed ? card.cvv : '•••'}</p>
                                                     </div>
                                                 </div>
                                                 <div className="flex flex-col items-end">
-                                                    <span className="text-[8px] font-black text-white/20 uppercase tracking-[0.2em] mb-1">Contactless</span>
-                                                    <Wifi size={18} className="text-white/20 rotate-90" />
+                                                    <span className="text-[7px] font-black text-white/20 uppercase tracking-[0.2em] mb-1">Contactless</span>
+                                                    <Wifi size={16} className="text-white/20 rotate-90" />
                                                 </div>
                                             </div>
 
                                             {card.isBlocked && (
                                                 <div className="absolute inset-0 flex items-center justify-center bg-black/60 backdrop-blur-[1px] rounded-[2rem] z-20">
-                                                    <div className="bg-rose-600 px-8 py-3 rounded-2xl shadow-2xl border border-rose-400/30 flex items-center gap-3">
-                                                        <Lock size={16} className="text-white" />
-                                                        <p className="text-[11px] font-black text-white uppercase tracking-widest">Tarjeta Suspendida</p>
+                                                    <div className="bg-rose-600 px-6 py-2 rounded-2xl shadow-2xl border border-rose-400/30 flex items-center gap-2">
+                                                        <Lock size={14} className="text-white" />
+                                                        <p className="text-[10px] font-black text-white uppercase tracking-widest">Tarjeta Suspendida</p>
                                                     </div>
                                                 </div>
                                             )}
