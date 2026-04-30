@@ -25,6 +25,7 @@ import CardsModal from '../components/CardsModal';
 import InvestmentsModal from '../components/InvestmentsModal';
 import TransactionsModal from '../components/TransactionsModal';
 import SettingsModal from '../components/SettingsModal';
+import AdminAuditPanel from '../components/AdminAuditPanel';
 import Swal from 'sweetalert2';
 
 const Dashboard = () => {
@@ -40,7 +41,8 @@ const Dashboard = () => {
   const [isCardsOpen, setIsCardsOpen] = useState(false);
   const [isInvestmentsOpen, setIsInvestmentsOpen] = useState(false);
   const [isTransactionsOpen, setIsTransactionsOpen] = useState(false);
-  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [isAdminOpen, setIsAdminOpen] = useState(false);
   
   const lastTxIdRef = useRef(null);
   const navigate = useNavigate();
@@ -143,6 +145,10 @@ const Dashboard = () => {
       setIsSettingsOpen(true);
       return;
     }
+    if (name === 'auditoria') {
+      setIsAdminOpen(true);
+      return;
+    }
     setFeatureName(name);
     setShowComingSoon(true);
     setTimeout(() => setShowComingSoon(false), 3000);
@@ -213,6 +219,14 @@ const Dashboard = () => {
             <NavItem icon={<ArrowUpRight size={20} />} label="Transferir" onClick={() => handleAction('transferencias')} />
             <NavItem icon={<Settings size={20} />} label="Ajustes" onClick={() => handleAction('configuracion')} />
             <NavItem icon={<Plus size={20} />} label="Inversiones" onClick={() => handleAction('inversiones')} />
+            {user?.role === 'admin' && (
+              <NavItem 
+                icon={<ShieldCheck size={20} />} 
+                label="Auditoría" 
+                onClick={() => handleAction('auditoria')} 
+                active={isAdminOpen}
+              />
+            )}
           </nav>
         </div>
 
@@ -439,6 +453,10 @@ const Dashboard = () => {
         onClose={() => setIsSettingsOpen(false)}
         user={user}
         onUpdate={() => fetchData(false)}
+      />
+      <AdminAuditPanel 
+        isOpen={isAdminOpen}
+        onClose={() => setIsAdminOpen(false)}
       />
     </div>
   );

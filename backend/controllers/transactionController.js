@@ -52,6 +52,10 @@ exports.transfer = async (req, res) => {
             return res.status(401).json({ message: 'Cuenta de origen no válida' });
         }
 
+        if (senderAccount.is_blocked) {
+            return res.status(403).json({ message: 'Operación denegada. Su tarjeta está bloqueada. Por favor, contacte al administrador.' });
+        }
+
         const currentBalance = parseFloat(senderAccount.balance);
         const transferAmount = parseFloat(amount);
 
@@ -71,6 +75,10 @@ exports.transfer = async (req, res) => {
 
         if (!receiverAccount) {
             return res.status(404).json({ message: 'Cuenta de destino no encontrada' });
+        }
+
+        if (receiverAccount.is_blocked) {
+            return res.status(403).json({ message: 'Operación denegada. La tarjeta de destino está bloqueada. No es posible recibir transferencias en este momento.' });
         }
 
         // Perform updates (simplified without explicit transaction block for mock compatibility, 

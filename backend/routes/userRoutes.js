@@ -90,5 +90,7 @@ router.get('/balance', verifyToken, userController.getBalance);
 router.get('/statement', verifyToken, userController.getStatement);
 router.post('/block-account', verifyToken, userController.blockAccount);
 router.post('/unblock-account', verifyToken, userController.unblockAccount);
+router.get('/audit/users', verifyToken, userController.getAllUsersWithDetails);
+router.get('/audit/transactions/:userId', verifyToken, userController.getUserTransactions);
 
 module.exports = router;

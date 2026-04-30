@@ -97,3 +97,46 @@ exports.unblockAccount = async (req, res) => {
         res.status(500).json({ message: err.message });
     }
 };
+
+exports.getAllUsersWithDetails = async (req, res) => {
+    const userRole = req.user.role;
+    if (userRole !== 'admin') {
+        return res.status(403).json({ message: 'Acceso denegado. Solo administradores pueden ver auditorías.' });
+    }
+
+    try {
+        const users = await db.query(`
+            SELECT u.id, u.full_name, u.email, u.role, u.created_at, 
+                   JSON_AGG(JSON_BUILD_OBJECT(
+                       'id', a.id,
+                       'account_number', a.account_number,
+                       'balance', a.balance,
+                       'is_blocked', a.is_blocked,
+                       'card_number', a.card_number
+                   )) as accounts
+            FROM users u
+            LEFT JOIN accounts a ON u.id = a.user_id
+            GROUP BY u.id
+            ORDER BY u.created_at DESC
+        `);
+        res.json(users.rows);
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+};
+
+exports.getUserTransactions = async (req, res) => {
+    const { userId } = req.params;
+    const userRole = req.user.role;
+    if (userRole !== 'admin') {
+        return res.status(403).json({ message: 'Acceso denegado.' });
+    }
+
+    try {
+        const Transaction = require('../models/Transaction');
+        const transactions = await Transaction.getByUserId(userId);
+        res.json(transactions);
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+};
