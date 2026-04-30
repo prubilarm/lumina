@@ -22,19 +22,26 @@ app.use(express.json());
 // Auto-migration for Recipients table
 const db = require('./config/db');
 if (db.query) {
-    db.query(`
-        CREATE TABLE IF NOT EXISTS recipients (
-            id SERIAL PRIMARY KEY,
-            user_id UUID REFERENCES users(id),
-            name TEXT NOT NULL,
-            account_number TEXT NOT NULL,
-            bank_name TEXT DEFAULT 'Lumina Bank',
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-        );
-        ALTER TABLE users ADD COLUMN IF NOT EXISTS reset_code TEXT;
-        ALTER TABLE users ADD COLUMN IF NOT EXISTS reset_expires TIMESTAMP;
-    `).then(() => console.log('✅ DB tables & columns checked/updated'))
-      .catch(err => console.error('❌ Error checking Recipients table:', err));
+    const initDb = async () => {
+        try {
+            await db.query(`
+                CREATE TABLE IF NOT EXISTS recipients (
+                    id SERIAL PRIMARY KEY,
+                    user_id UUID REFERENCES users(id),
+                    name TEXT NOT NULL,
+                    account_number TEXT NOT NULL,
+                    bank_name TEXT DEFAULT 'Lumina Bank',
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                );
+            `);
+            await db.query('ALTER TABLE users ADD COLUMN IF NOT EXISTS reset_code TEXT;');
+            await db.query('ALTER TABLE users ADD COLUMN IF NOT EXISTS reset_expires TIMESTAMP;');
+            console.log('✅ DB tables & columns checked/updated');
+        } catch (err) {
+            console.error('❌ Error checking/updating DB:', err);
+        }
+    };
+    initDb();
 }
 
 // Diagnostic route

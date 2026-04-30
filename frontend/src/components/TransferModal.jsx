@@ -145,10 +145,17 @@ const TransferModal = ({ isOpen, onClose, onSuccess, accounts = [] }) => {
                 });
             }
 
-            // 3. Perform Transfer
-            const response = await api.post('/transactions/transfer', {
-                amount: parseFloat(amount),
-                receiver_card_number: transferType === 'third' ? destinationCard : undefined,
+        // 3. Perform Transfer
+        const numericAmount = parseFloat(amount);
+        if (numericAmount < 10) {
+            Swal.fire({ icon: 'warning', title: 'Monto insuficiente', text: 'La transferencia mínima es de $10 pesos.', background: '#0f172a', color: '#f8fafc' });
+            setLoading(false);
+            return;
+        }
+
+        const response = await api.post('/transactions/transfer', {
+            amount: numericAmount,
+            receiver_card_number: transferType === 'third' ? destinationCard : undefined,
                 receiver_account_number: transferType === 'own' ? recipient.account_number : undefined,
                 description,
                 sender_account_number: senderAccount
@@ -468,7 +475,22 @@ const TransferModal = ({ isOpen, onClose, onSuccess, accounts = [] }) => {
                                         <input 
                                             type="number" 
                                             value={amount}
-                                            onChange={(e) => setAmount(e.target.value)}
+                                            onChange={(e) => {
+                                                const val = e.target.value;
+                                                if (val.startsWith('-')) {
+                                                    Swal.fire({
+                                                        icon: 'error',
+                                                        title: 'Monto no válido',
+                                                        text: 'No se permiten montos negativos.',
+                                                        timer: 2000,
+                                                        showConfirmButton: false,
+                                                        background: '#0f172a',
+                                                        color: '#f8fafc'
+                                                    });
+                                                    return;
+                                                }
+                                                setAmount(val);
+                                            }}
                                             placeholder="0"
                                             className="w-full bg-white/5 border border-white/10 rounded-2xl py-5 pl-10 pr-6 text-2xl font-black text-white focus:border-cyan-500/50 outline-none transition-all placeholder:text-slate-800"
                                         />
