@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const api = axios.create({
-  baseURL: 'https://lumina-api-ebon.vercel.app',
+  baseURL: 'https://cajero-automatico-wine.vercel.app/api',
 });
 
 // Add token to requests

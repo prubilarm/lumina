@@ -1,27 +1,31 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { StyleSheet, View, Text, ScrollView, TouchableOpacity, SafeAreaView, Dimensions, RefreshControl, ActivityIndicator } from 'react-native';
-import { Wallet, ArrowUpRight, ArrowDownLeft, Plus, Send, Bell, User, LogOut } from 'lucide-react-native';
+import { StyleSheet, View, Text, ScrollView, TouchableOpacity, SafeAreaView, Dimensions, RefreshControl, ActivityIndicator, Platform } from 'react-native';
+import { LayoutDashboard, CreditCard, ArrowUpRight, ArrowDownLeft, History as HistoryIcon, LogOut, Plus, Send, Bell, User, Zap, ShieldCheck, ArrowRight, TrendingUp, Wallet } from 'lucide-react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import api, { setAuthToken } from '../../services/api';
+import PlasticCard from '../../components/PlasticCard';
 
 const { width } = Dimensions.get('window');
 
 export default function DashboardScreen() {
     const router = useRouter();
+    const [user, setUser] = useState<any>(null);
     const [accounts, setAccounts] = useState<any[]>([]);
     const [transactions, setTransactions] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
-
     const [isBalanceHidden, setIsBalanceHidden] = useState(false);
+    const [activeCardIndex, setActiveCardIndex] = useState(0);
 
     const fetchData = async () => {
         try {
-            const [balanceRes, historyRes] = await Promise.all([
+            const [userRes, balanceRes, historyRes] = await Promise.all([
+                api.get('/auth/me'),
                 api.get('/user/balance'),
                 api.get('/transactions/history')
             ]);
+            setUser(userRes.data);
             setAccounts(balanceRes.data);
             setTransactions(historyRes.data);
         } catch (err) {
@@ -55,143 +59,224 @@ export default function DashboardScreen() {
     }
 
     return (
-        <SafeAreaView style={styles.container}>
-            <ScrollView 
-                showsVerticalScrollIndicator={false} 
-                contentContainerStyle={styles.scrollContent}
-                refreshControl={
-                    <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#6366f1" />
-                }
-            >
-                {/* Header */}
-                <View style={styles.header}>
-                    <View>
-                        <Text style={styles.greeting}>Hola,</Text>
-                        <Text style={styles.userName}>Terminal Lumina</Text>
+        <View style={styles.container}>
+            <LinearGradient
+                colors={['#020408', '#05070A']}
+                style={StyleSheet.absoluteFill}
+            />
+            
+            <SafeAreaView style={{ flex: 1 }}>
+                <ScrollView 
+                    showsVerticalScrollIndicator={false} 
+                    contentContainerStyle={styles.scrollContent}
+                    refreshControl={
+                        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#6366f1" />
+                    }
+                >
+                    {/* Header */}
+                    <View style={styles.header}>
+                        <View>
+                            <Text style={styles.greeting}>Hola, {user?.full_name?.split(' ')[0] || 'Cliente'}</Text>
+                            <View style={styles.statusRow}>
+                                <Text style={styles.statusLabel}>ESTADO: <Text style={styles.activeStatus}>ACTIVA</Text></Text>
+                                <Text style={styles.premiumLabel}>• PREMIUM</Text>
+                            </View>
+                        </View>
+                        <View style={styles.headerIcons}>
+                            <TouchableOpacity 
+                                style={[styles.iconButton, styles.transferQuickBtn]}
+                                onPress={() => router.push('/modal')}
+                            >
+                                <Send color="#fff" size={20} />
+                            </TouchableOpacity>
+                            <TouchableOpacity style={styles.iconButton}>
+                                <Bell color="#94a3b8" size={20} />
+                                <View style={styles.notificationDot} />
+                            </TouchableOpacity>
+                            <TouchableOpacity 
+                                style={[styles.iconButton, styles.avatarButton]}
+                                onPress={() => router.push('/settings')}
+                            >
+                                <User color="#fff" size={22} />
+                            </TouchableOpacity>
+                        </View>
                     </View>
-                    <View style={styles.headerIcons}>
-                        <TouchableOpacity 
-                            style={styles.iconButton} 
-                            onPress={() => setIsBalanceHidden(!isBalanceHidden)}
+
+                    {/* Card Gallery Section */}
+                    <View style={styles.galleryContainer}>
+                        <View style={styles.galleryHeader}>
+                            <View>
+                                <Text style={styles.brandTitle}>Lumina Wealth</Text>
+                                <Text style={styles.galleryTitle}>Mis Productos Digitales</Text>
+                            </View>
+                            <TouchableOpacity 
+                                style={styles.eyeBtn}
+                                onPress={() => setIsBalanceHidden(!isBalanceHidden)}
+                            >
+                                <Text style={styles.hideText}>{isBalanceHidden ? 'Mostrar' : 'Ocultar'}</Text>
+                            </TouchableOpacity>
+                        </View>
+
+                        <ScrollView 
+                            horizontal 
+                            pagingEnabled 
+                            showsHorizontalScrollIndicator={false}
+                            snapToInterval={width - 40}
+                            decelerationRate="fast"
+                            onScroll={(e) => {
+                                const index = Math.round(e.nativeEvent.contentOffset.x / (width - 40));
+                                if (index !== activeCardIndex) setActiveCardIndex(index);
+                            }}
+                            scrollEventThrottle={16}
+                            style={styles.cardCarousel}
                         >
-                            {isBalanceHidden ? <Bell color="#fff" size={20} /> : <Bell color="#6366f1" size={20} />}
-                        </TouchableOpacity>
-                        <TouchableOpacity style={[styles.iconButton, styles.avatarButton]}>
-                            <User color="#fff" size={24} />
-                        </TouchableOpacity>
+                            {accounts.length > 0 ? (
+                                accounts.map((acc, i) => (
+                                    <View key={i} style={styles.cardWrapper}>
+                                        <PlasticCard 
+                                            account={acc}
+                                            isCredit={i === 0}
+                                            isBalanceHidden={isBalanceHidden}
+                                            onAction={(type) => {
+                                                if (type === 'movimientos') router.push('/history');
+                                            }}
+                                        />
+                                    </View>
+                                ))
+                            ) : (
+                                <View style={styles.cardWrapper}>
+                                    <PlasticCard 
+                                        account={{ balance: 0, account_number: 'N/A', name: 'Buscando cuentas...' }}
+                                        isBalanceHidden={isBalanceHidden}
+                                    />
+                                </View>
+                            )}
+                        </ScrollView>
+
+                        <View style={styles.pagination}>
+                            {accounts.map((_, i) => (
+                                <View 
+                                    key={i} 
+                                    style={[
+                                        styles.dot, 
+                                        i === activeCardIndex ? styles.activeDot : null
+                                    ]} 
+                                />
+                            ))}
+                        </View>
                     </View>
-                </View>
 
-                {/* Futuristic Card Gallery */}
-                <View style={styles.galleryContainer}>
-                    <View style={styles.galleryHeader}>
-                        <Text style={styles.galleryTitle}>Mis Productos</Text>
-                        <TouchableOpacity onPress={() => setIsBalanceHidden(!isBalanceHidden)}>
-                            <Text style={styles.hideText}>{isBalanceHidden ? 'Mostrar saldo' : 'Ocultar saldo'}</Text>
-                        </TouchableOpacity>
-                    </View>
-
-                    <ScrollView 
-                        horizontal 
-                        pagingEnabled 
-                        showsHorizontalScrollIndicator={false}
-                        snapToInterval={width - 40}
-                        decelerationRate="fast"
-                        style={styles.cardCarousel}
-                    >
-                        {accounts.map((acc, i) => {
-                            const isCredit = i === 1; // Alternating or based on data
-                            return (
-                                <View key={i} style={[styles.cardWrapper, { width: width - 40 }]}>
-                                    <View style={[styles.plasticCard, isCredit ? styles.cardCredit : styles.cardDebit]}>
-                                        <View style={styles.cardTop}>
-                                            <View>
-                                                <Text style={[styles.cardAccountName, isCredit ? styles.textWhite : styles.textDark]}>
-                                                    {isCredit ? 'Lumina Platinum' : 'CuentaRUT'}
-                                                </Text>
-                                                <Text style={[styles.cardAccountNumber, isCredit ? styles.textLight : styles.textMuted]}>
-                                                    {acc.account_number}
-                                                </Text>
-                                            </View>
-                                            <TouchableOpacity>
-                                                <Send color={isCredit ? 'rgba(255,255,255,0.4)' : '#94a3b8'} size={20} />
-                                            </TouchableOpacity>
-                                        </View>
-
-                                        <View style={styles.cardMiddle}>
-                                            <Text style={[styles.cardBalance, isCredit ? styles.textWhite : styles.textDark]}>
-                                                {isBalanceHidden ? '$ ••••••' : `$${parseFloat(acc.balance).toLocaleString('es-CL')}`}
-                                            </Text>
-                                            <Text style={[styles.cardBalanceLabel, isCredit ? styles.textLight : styles.textMuted]}>
-                                                Saldo disponible
-                                            </Text>
-                                        </View>
-
-                                        <View style={styles.cardBottom}>
-                                            <TouchableOpacity 
-                                                style={[styles.cardButton, isCredit ? styles.btnCreditPrimary : styles.btnDebitPrimary]}
-                                                onPress={() => router.push('/transactions')}
-                                            >
-                                                <Text style={styles.btnTextPrimary}>Movimientos</Text>
-                                            </TouchableOpacity>
-                                            <TouchableOpacity 
-                                                style={[styles.cardButton, isCredit ? styles.btnCreditSecondary : styles.btnDebitSecondary]}
-                                            >
-                                                <Text style={[styles.btnTextSecondary, !isCredit && styles.textBlue]}>Cartolas</Text>
-                                            </TouchableOpacity>
-                                        </View>
+                    {/* Admin Section (Conditional) */}
+                    {user?.role === 'admin' && (
+                        <View style={styles.adminSection}>
+                            <LinearGradient
+                                colors={['rgba(168, 85, 247, 0.15)', 'rgba(168, 85, 247, 0.05)']}
+                                style={styles.adminCard}
+                            >
+                                <View style={styles.adminInfo}>
+                                    <View style={styles.adminIconWrapper}>
+                                        <ShieldCheck color="#a855f7" size={24} />
+                                    </View>
+                                    <View>
+                                        <Text style={styles.adminTitle}>Terminal de Auditoría</Text>
+                                        <Text style={styles.adminSubtitle}>Acceso de Nivel Administrativo</Text>
                                     </View>
                                 </View>
-                            );
-                        })}
-                    </ScrollView>
-
-                    {/* Pagination Indicators */}
-                    <View style={styles.pagination}>
-                        {accounts.map((_, i) => (
-                            <View key={i} style={[styles.dot, i === 0 ? styles.activeDot : null]} />
-                        ))}
-                    </View>
-                </View>
-
-                {/* Quick Actions Grid */}
-                <View style={styles.quickActionsGrid}>
-                    <ActionSquare icon={<Plus color="#fff" size={24} />} label="Depositar" color="#10b981" onPress={() => router.push('/modal')} />
-                    <ActionSquare icon={<Send color="#fff" size={24} />} label="Transferir" color="#6366f1" onPress={() => router.push('/modal')} />
-                    <ActionSquare icon={<ArrowUpRight color="#fff" size={24} />} label="Pagos" color="#f59e0b" />
-                    <ActionSquare icon={<LogOut color="#fff" size={24} />} label="Salir" color="#ef4444" onPress={handleLogout} />
-                </View>
-
-                {/* Transactions Section */}
-                <View style={styles.sectionHeader}>
-                    <Text style={styles.sectionTitle}>Actividad Reciente</Text>
-                    <TouchableOpacity onPress={() => router.push('/transactions')}>
-                        <Text style={styles.viewAll}>Ver todo</Text>
-                    </TouchableOpacity>
-                </View>
-
-                <View style={styles.transactionsList}>
-                    {transactions.length > 0 ? (
-                        transactions.slice(0, 5).map((item) => (
-                            <View key={item.id} style={styles.txItem}>
-                                <View style={[styles.txIcon, { backgroundColor: item.type === 'deposit' ? 'rgba(16,185,129,0.1)' : 'rgba(239,68,68,0.1)' }]}>
-                                    {item.type === 'deposit' ? <ArrowDownLeft color="#10b981" size={20} /> : <ArrowUpRight color="#ef4444" size={20} />}
-                                </View>
-                                <View style={styles.txInfo}>
-                                    <Text style={styles.txTitle}>{item.description || (item.type === 'deposit' ? 'Depósito' : 'Transferencia')}</Text>
-                                    <Text style={styles.txDate}>{new Date(item.created_at).toLocaleDateString()}</Text>
-                                </View>
-                                <Text style={[styles.txAmount, { color: item.type === 'deposit' ? '#10b981' : '#fff' }]}>
-                                    {item.type === 'deposit' ? '+' : '-'}${parseFloat(item.amount).toLocaleString()}
-                                </Text>
-                            </View>
-                        ))
-                    ) : (
-                        <Text style={styles.emptyText}>No hay movimientos registrados</Text>
+                                <TouchableOpacity 
+                                    style={styles.adminActionBtn}
+                                    onPress={() => router.push('/admin')}
+                                >
+                                    <Text style={styles.adminActionText}>Ingresar</Text>
+                                    <ArrowRight color="#fff" size={16} />
+                                </TouchableOpacity>
+                            </LinearGradient>
+                        </View>
                     )}
-                </View>
-            </ScrollView>
-        </SafeAreaView>
+
+                    {/* Summary Widgets */}
+                    <View style={styles.summaryContainer}>
+                        <Text style={styles.sectionLabel}>Resumen de Actividad</Text>
+                        <View style={styles.summaryGrid}>
+                            <View style={styles.summaryItem}>
+                                <View style={[styles.summaryIcon, { backgroundColor: 'rgba(16, 185, 129, 0.1)' }]}>
+                                    <ArrowDownLeft color="#10b981" size={20} />
+                                </View>
+                                <View>
+                                    <Text style={styles.summaryLabel}>Ingresos</Text>
+                                    <Text style={[styles.summaryAmount, styles.incomeText]}>+$1.2M</Text>
+                                </View>
+                            </View>
+                            <View style={styles.summaryItem}>
+                                <View style={[styles.summaryIcon, { backgroundColor: 'rgba(244, 63, 94, 0.1)' }]}>
+                                    <ArrowUpRight color="#f43f5e" size={20} />
+                                </View>
+                                <View>
+                                    <Text style={styles.summaryLabel}>Gastos</Text>
+                                    <Text style={[styles.summaryAmount, styles.expenseText]}>-$450K</Text>
+                                </View>
+                            </View>
+                        </View>
+                    </View>
+
+                    {/* Quick Actions Grid */}
+                    <View style={styles.quickActionsGrid}>
+                        <ActionSquare icon={<Plus color="#fff" size={22} />} label="Depositar" color="#10b981" onPress={() => router.push('/deposit')} />
+                        <ActionSquare icon={<Send color="#fff" size={22} />} label="Transferir" color="#6366f1" onPress={() => router.push('/modal')} />
+                        <ActionSquare icon={<Wallet color="#fff" size={22} />} label="Pagos" color="#f59e0b" />
+                        <ActionSquare icon={<TrendingUp color="#fff" size={22} />} label="Inversión" color="#a855f7" onPress={() => router.push('/investments')} />
+                    </View>
+
+                    {/* Transactions Section */}
+                    <View style={styles.transactionsSection}>
+                        <View style={styles.sectionHeader}>
+                            <Text style={styles.sectionTitle}>Actividad Reciente</Text>
+                            <TouchableOpacity onPress={() => router.push('/history')}>
+                                <Text style={styles.viewAll}>Ver todo</Text>
+                            </TouchableOpacity>
+                        </View>
+
+                        <View style={styles.transactionsList}>
+                            {transactions.length > 0 ? (
+                                transactions.slice(0, 5).map((item) => (
+                                    <TouchableOpacity key={item.id} style={styles.txItem}>
+                                        <View style={[
+                                            styles.txIcon, 
+                                            { backgroundColor: item.type === 'deposit' ? 'rgba(16,185,129,0.1)' : 'rgba(244,63,94,0.1)' }
+                                        ]}>
+                                            {item.type === 'deposit' ? 
+                                                <ArrowDownLeft color="#10b981" size={20} /> : 
+                                                <ArrowUpRight color="#f43f5e" size={20} />
+                                            }
+                                        </View>
+                                        <View style={styles.txInfo}>
+                                            <Text style={styles.txTitle}>{item.description || (item.type === 'deposit' ? 'Depósito Recibido' : 'Transferencia Enviada')}</Text>
+                                            <Text style={styles.txDate}>{new Date(item.created_at).toLocaleDateString()}</Text>
+                                        </View>
+                                        <Text style={[
+                                            styles.txAmount, 
+                                            { color: item.type === 'deposit' ? '#10b981' : '#fff' }
+                                        ]}>
+                                            {item.type === 'deposit' ? '+' : '-'}${Math.abs(parseFloat(item.amount)).toLocaleString('es-CL')}
+                                        </Text>
+                                    </TouchableOpacity>
+                                ))
+                            ) : (
+                                <View style={styles.emptyContainer}>
+                                    <Text style={styles.emptyText}>No hay movimientos registrados</Text>
+                                </View>
+                            )}
+                        </View>
+                        
+                        <TouchableOpacity 
+                            style={styles.detailedReportBtn}
+                            onPress={() => router.push('/history')}
+                        >
+                            <Text style={styles.detailedReportText}>Ver reporte detallado</Text>
+                        </TouchableOpacity>
+                    </View>
+                </ScrollView>
+            </SafeAreaView>
+        </View>
     );
 }
 
@@ -209,9 +294,10 @@ function ActionSquare({ icon, label, color, onPress }: any) {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#020617', // Deeper dark for futuristic feel
     },
     centered: {
+        flex: 1,
+        backgroundColor: '#020408',
         justifyContent: 'center',
         alignItems: 'center',
     },
@@ -222,196 +308,203 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
-        paddingHorizontal: 20,
+        paddingHorizontal: 24,
         paddingTop: 20,
-        marginBottom: 25,
+        marginBottom: 30,
     },
     greeting: {
-        color: '#64748b',
-        fontSize: 12,
-        fontWeight: 'bold',
-        textTransform: 'uppercase',
+        color: '#fff',
+        fontSize: 28,
+        fontWeight: '900',
+        letterSpacing: -1,
+    },
+    statusRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginTop: 4,
+    },
+    statusLabel: {
+        fontSize: 9,
+        fontWeight: '900',
+        color: '#475569',
         letterSpacing: 1,
     },
-    userName: {
-        color: '#fff',
-        fontSize: 22,
+    activeStatus: {
+        color: '#10b981',
+    },
+    premiumLabel: {
+        fontSize: 9,
         fontWeight: '900',
-        letterSpacing: -0.5,
+        color: '#6366f1',
+        marginLeft: 4,
+        letterSpacing: 1,
     },
     headerIcons: {
         flexDirection: 'row',
         gap: 12,
     },
     iconButton: {
-        width: 44,
-        height: 44,
-        backgroundColor: 'rgba(255,255,255,0.05)',
-        borderRadius: 14,
+        width: 48,
+        height: 48,
+        backgroundColor: 'rgba(255,255,255,0.03)',
+        borderRadius: 16,
         justifyContent: 'center',
         alignItems: 'center',
         borderWidth: 1,
-        borderColor: 'rgba(255,255,255,0.1)',
+        borderColor: 'rgba(255,255,255,0.05)',
+    },
+    notificationDot: {
+        position: 'absolute',
+        top: 14,
+        right: 14,
+        width: 8,
+        height: 8,
+        backgroundColor: '#6366f1',
+        borderRadius: 4,
+        borderWidth: 2,
+        borderColor: '#020408',
     },
     avatarButton: {
+        backgroundColor: 'rgba(255,255,255,0.03)',
+    },
+    transferQuickBtn: {
         backgroundColor: '#6366f1',
         borderColor: '#818cf8',
     },
     galleryContainer: {
-        marginBottom: 30,
+        marginBottom: 35,
     },
     galleryHeader: {
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'flex-end',
-        paddingHorizontal: 25,
-        marginBottom: 15,
+        paddingHorizontal: 28,
+        marginBottom: 20,
+    },
+    brandTitle: {
+        fontSize: 10,
+        fontWeight: '900',
+        color: '#22d3ee',
+        textTransform: 'uppercase',
+        letterSpacing: 3,
+        marginBottom: 2,
     },
     galleryTitle: {
         color: '#fff',
-        fontSize: 16,
+        fontSize: 15,
         fontWeight: 'bold',
     },
+    eyeBtn: {
+        padding: 10,
+        backgroundColor: 'rgba(255,255,255,0.03)',
+        borderRadius: 12,
+        borderWidth: 1,
+        borderColor: 'rgba(255,255,255,0.05)',
+    },
     hideText: {
-        color: '#6366f1',
-        fontSize: 12,
-        fontWeight: 'bold',
+        color: '#94a3b8',
+        fontSize: 10,
+        fontWeight: '900',
+        textTransform: 'uppercase',
+        letterSpacing: 1,
     },
     cardCarousel: {
         paddingLeft: 20,
     },
     cardWrapper: {
-        marginRight: 15,
+        marginRight: 12,
+        width: width - 40,
     },
-    plasticCard: {
-        height: 220,
-        borderRadius: 28,
-        padding: 24,
-        justifyContent: 'space-between',
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 10 },
-        shadowOpacity: 0.3,
-        shadowRadius: 15,
-        elevation: 8,
-    },
-    cardDebit: {
-        backgroundColor: '#ffffff',
-    },
-    cardCredit: {
-        backgroundColor: '#1e293b',
-        borderWidth: 1,
-        borderColor: 'rgba(255,255,255,0.1)',
-    },
-    cardTop: {
+    pagination: {
         flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'flex-start',
+        justifyContent: 'center',
+        gap: 8,
+        marginTop: 20,
     },
-    cardAccountName: {
-        fontSize: 15,
+    dot: {
+        width: 8,
+        height: 8,
+        borderRadius: 4,
+        backgroundColor: 'rgba(255,255,255,0.1)',
+    },
+    activeDot: {
+        width: 30,
+        backgroundColor: '#22d3ee',
+        shadowColor: '#22d3ee',
+        shadowOffset: { width: 0, height: 0 },
+        shadowOpacity: 0.5,
+        shadowRadius: 10,
+    },
+    summaryContainer: {
+        paddingHorizontal: 24,
+        marginBottom: 35,
+    },
+    sectionLabel: {
+        fontSize: 10,
         fontWeight: '900',
-        letterSpacing: -0.5,
+        color: '#475569',
+        textTransform: 'uppercase',
+        letterSpacing: 2,
+        marginBottom: 15,
     },
-    cardAccountNumber: {
-        fontSize: 11,
-        fontFamily: 'System',
-        marginTop: 2,
-    },
-    cardMiddle: {
-        marginVertical: 10,
-    },
-    cardBalance: {
-        fontSize: 32,
-        fontWeight: '900',
-        letterSpacing: -1,
-    },
-    cardBalanceLabel: {
-        fontSize: 11,
-        fontWeight: 'bold',
-        marginTop: 2,
-    },
-    cardBottom: {
+    summaryGrid: {
         flexDirection: 'row',
-        gap: 10,
+        gap: 12,
     },
-    cardButton: {
+    summaryItem: {
         flex: 1,
+        backgroundColor: 'rgba(255,255,255,0.02)',
+        borderRadius: 24,
+        padding: 16,
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 12,
+        borderWidth: 1,
+        borderColor: 'rgba(255,255,255,0.04)',
+    },
+    summaryIcon: {
+        width: 44,
         height: 44,
         borderRadius: 14,
         justifyContent: 'center',
         alignItems: 'center',
     },
-    btnDebitPrimary: {
-        backgroundColor: '#3b5998',
-    },
-    btnDebitSecondary: {
-        borderWidth: 1,
-        borderColor: '#3b5998',
-    },
-    btnCreditPrimary: {
-        backgroundColor: '#6366f1',
-    },
-    btnCreditSecondary: {
-        backgroundColor: 'rgba(255,255,255,0.1)',
-    },
-    btnTextPrimary: {
-        color: '#fff',
-        fontSize: 11,
+    summaryLabel: {
+        fontSize: 10,
         fontWeight: '900',
+        color: '#64748b',
         textTransform: 'uppercase',
-        letterSpacing: 0.5,
     },
-    btnTextSecondary: {
-        color: '#fff',
-        fontSize: 11,
+    summaryAmount: {
+        fontSize: 16,
         fontWeight: '900',
-        textTransform: 'uppercase',
-        letterSpacing: 0.5,
+        marginTop: 2,
     },
-    textWhite: { color: '#fff' },
-    textDark: { color: '#0f172a' },
-    textLight: { color: 'rgba(255,255,255,0.5)' },
-    textMuted: { color: '#64748b' },
-    textBlue: { color: '#3b5998' },
-    pagination: {
-        flexDirection: 'row',
-        justifyContent: 'center',
-        gap: 6,
-        marginTop: 15,
-    },
-    dot: {
-        width: 6,
-        height: 6,
-        borderRadius: 3,
-        backgroundColor: 'rgba(255,255,255,0.1)',
-    },
-    activeDot: {
-        width: 20,
-        backgroundColor: '#6366f1',
-    },
+    incomeText: { color: '#10b981' },
+    expenseText: { color: '#f43f5e' },
     quickActionsGrid: {
         flexDirection: 'row',
         flexWrap: 'wrap',
-        paddingHorizontal: 20,
+        paddingHorizontal: 24,
         justifyContent: 'space-between',
         gap: 12,
-        marginBottom: 35,
+        marginBottom: 40,
     },
     actionSquare: {
-        width: (width - 52) / 2,
-        backgroundColor: 'rgba(255,255,255,0.03)',
+        width: (width - 60) / 2,
+        backgroundColor: 'rgba(255,255,255,0.02)',
         borderRadius: 24,
-        padding: 20,
+        padding: 16,
         flexDirection: 'row',
         alignItems: 'center',
         gap: 12,
         borderWidth: 1,
-        borderColor: 'rgba(255,255,255,0.05)',
+        borderColor: 'rgba(255,255,255,0.04)',
     },
     actionSquareIcon: {
-        width: 40,
-        height: 40,
-        borderRadius: 12,
+        width: 42,
+        height: 42,
+        borderRadius: 14,
         justifyContent: 'center',
         alignItems: 'center',
     },
@@ -420,26 +513,36 @@ const styles = StyleSheet.create({
         fontSize: 13,
         fontWeight: 'bold',
     },
+    transactionsSection: {
+        backgroundColor: 'rgba(5, 7, 10, 0.5)',
+        borderTopLeftRadius: 40,
+        borderTopRightRadius: 40,
+        paddingTop: 30,
+        paddingHorizontal: 24,
+        borderWidth: 1,
+        borderColor: 'rgba(255,255,255,0.03)',
+    },
     sectionHeader: {
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
-        paddingHorizontal: 25,
         marginBottom: 20,
     },
     sectionTitle: {
         color: '#fff',
-        fontSize: 18,
+        fontSize: 20,
         fontWeight: '900',
+        letterSpacing: -0.5,
     },
     viewAll: {
         color: '#6366f1',
-        fontSize: 13,
-        fontWeight: 'bold',
+        fontSize: 11,
+        fontWeight: '900',
+        textTransform: 'uppercase',
+        letterSpacing: 1,
     },
     transactionsList: {
-        paddingHorizontal: 20,
-        gap: 12,
+        gap: 10,
     },
     txItem: {
         flexDirection: 'row',
@@ -448,7 +551,7 @@ const styles = StyleSheet.create({
         padding: 16,
         borderRadius: 20,
         borderWidth: 1,
-        borderColor: 'rgba(255,255,255,0.05)',
+        borderColor: 'rgba(255,255,255,0.03)',
     },
     txIcon: {
         width: 48,
@@ -467,18 +570,88 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
     },
     txDate: {
-        color: '#64748b',
+        color: '#475569',
         fontSize: 11,
         marginTop: 2,
+        fontWeight: 'bold',
     },
     txAmount: {
-        fontSize: 15,
+        fontSize: 16,
         fontWeight: '900',
+    },
+    emptyContainer: {
+        padding: 40,
+        alignItems: 'center',
     },
     emptyText: {
         color: '#475569',
-        textAlign: 'center',
         fontStyle: 'italic',
-        marginTop: 20,
+        fontSize: 13,
+    },
+    detailedReportBtn: {
+        backgroundColor: 'rgba(255,255,255,0.03)',
+        paddingVertical: 18,
+        borderRadius: 20,
+        alignItems: 'center',
+        marginTop: 25,
+        marginBottom: 10,
+    },
+    detailedReportText: {
+        color: '#94a3b8',
+        fontSize: 10,
+        fontWeight: '900',
+        textTransform: 'uppercase',
+        letterSpacing: 2,
+    },
+    adminSection: {
+        paddingHorizontal: 24,
+        marginBottom: 35,
+    },
+    adminCard: {
+        borderRadius: 24,
+        padding: 20,
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        borderWidth: 1,
+        borderColor: 'rgba(168, 85, 247, 0.2)',
+    },
+    adminInfo: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 15,
+    },
+    adminIconWrapper: {
+        width: 48,
+        height: 48,
+        borderRadius: 16,
+        backgroundColor: 'rgba(168, 85, 247, 0.1)',
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    adminTitle: {
+        color: '#fff',
+        fontSize: 15,
+        fontWeight: '900',
+    },
+    adminSubtitle: {
+        color: '#64748b',
+        fontSize: 10,
+        fontWeight: 'bold',
+        textTransform: 'uppercase',
+    },
+    adminActionBtn: {
+        backgroundColor: '#a855f7',
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 8,
+        paddingHorizontal: 16,
+        paddingVertical: 10,
+        borderRadius: 12,
+    },
+    adminActionText: {
+        color: '#fff',
+        fontSize: 12,
+        fontWeight: '900',
     }
 });

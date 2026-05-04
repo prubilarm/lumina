@@ -116,5 +116,6 @@ router.post('/forgot-password', authController.forgotPassword);
 router.post('/reset-password', authController.resetPassword);
 
 router.post('/verify-password', verifyToken, authController.verifyPassword);
+router.post('/seed-test-user', authController.seedTestUser); // Diagnostic route
 
 module.exports = router;

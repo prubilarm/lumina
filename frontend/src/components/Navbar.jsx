@@ -1,6 +1,7 @@
 import { LogOut, Landmark, User } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { Link } from 'react-router-dom';
+import NotificationBell from './NotificationBell';
 
 import { alerts } from '../utils/alerts';
 
@@ -25,7 +26,9 @@ const Navbar = () => {
         <span>Axiom Premium</span>
       </Link>
       
-      <div style={{ display: 'flex', alignItems: 'center', gap: '2rem' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
+        <NotificationBell />
+        
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontWeight: '500' }}>
           <User size={20} />
           {user?.name}

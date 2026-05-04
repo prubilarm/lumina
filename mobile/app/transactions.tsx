@@ -1,8 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { StyleSheet, View, Text, FlatList, TouchableOpacity, SafeAreaView, ActivityIndicator, RefreshControl } from 'react-native';
-import { ArrowLeft, ArrowUpRight, ArrowDownLeft, Filter, Calendar } from 'lucide-react-native';
+import { StyleSheet, View, Text, FlatList, TouchableOpacity, SafeAreaView, ActivityIndicator, RefreshControl, Dimensions, Platform } from 'react-native';
+import { ArrowLeft, ArrowUpRight, ArrowDownLeft, Filter, Calendar, TrendingUp, TrendingDown, Clock } from 'lucide-react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import api from '../services/api';
+
+const { width } = Dimensions.get('window');
 
 export default function TransactionsScreen() {
     const router = useRouter();
@@ -31,80 +34,122 @@ export default function TransactionsScreen() {
         fetchTransactions();
     };
 
-    const renderItem = ({ item }: { item: any }) => (
-        <View style={styles.txItem}>
-            <View style={[styles.txIcon, { backgroundColor: item.type === 'deposit' ? 'rgba(16,185,129,0.1)' : 'rgba(239,68,68,0.1)' }]}>
-                {item.type === 'deposit' ? <ArrowDownLeft color="#10b981" size={20} /> : <ArrowUpRight color="#ef4444" size={20} />}
-            </View>
-            <View style={styles.txInfo}>
-                <Text style={styles.txTitle}>{item.description || (item.type === 'deposit' ? 'Depósito' : 'Transferencia')}</Text>
-                <Text style={styles.txDate}>{new Date(item.created_at).toLocaleDateString()} • {new Date(item.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</Text>
-            </View>
-            <View style={styles.txAmountContainer}>
-                <Text style={[styles.txAmount, { color: item.type === 'deposit' ? '#10b981' : '#fff' }]}>
-                    {item.type === 'deposit' ? '+' : '-'}${parseFloat(item.amount).toFixed(2)}
-                </Text>
-                <Text style={styles.txCurrency}>USD</Text>
-            </View>
-        </View>
-    );
+    const renderItem = ({ item }: { item: any }) => {
+        const isDeposit = item.type === 'deposit';
+        return (
+            <TouchableOpacity style={styles.txItem}>
+                <View style={[
+                    styles.txIcon, 
+                    { backgroundColor: isDeposit ? 'rgba(16,185,129,0.05)' : 'rgba(244,63,94,0.05)' }
+                ]}>
+                    {isDeposit ? 
+                        <ArrowDownLeft color="#10b981" size={22} /> : 
+                        <ArrowUpRight color="#f43f5e" size={22} />
+                    }
+                </View>
+                <View style={styles.txInfo}>
+                    <Text style={styles.txTitle}>{item.description || (isDeposit ? 'Depósito' : 'Transferencia')}</Text>
+                    <View style={styles.txMeta}>
+                        <Clock size={10} color="#475569" />
+                        <Text style={styles.txDate}>
+                            {new Date(item.created_at).toLocaleDateString('es-CL', { day: '2-digit', month: 'short' })} • {new Date(item.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                        </Text>
+                    </View>
+                </View>
+                <View style={styles.txAmountContainer}>
+                    <Text style={[styles.txAmount, { color: isDeposit ? '#10b981' : '#fff' }]}>
+                        {isDeposit ? '+' : '-'}${parseFloat(item.amount).toLocaleString('es-CL')}
+                    </Text>
+                    <Text style={styles.txStatus}>COMPLETADO</Text>
+                </View>
+            </TouchableOpacity>
+        );
+    };
+
+    const totalIncome = transactions.filter(t => t.type === 'deposit').reduce((acc, t) => acc + parseFloat(t.amount), 0);
+    const totalExpenses = transactions.filter(t => t.type !== 'deposit').reduce((acc, t) => acc + parseFloat(t.amount), 0);
 
     return (
-        <SafeAreaView style={styles.container}>
-            <View style={styles.header}>
-                <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-                    <ArrowLeft color="#fff" size={24} />
-                </TouchableOpacity>
-                <Text style={styles.headerTitle}>Actividad</Text>
-                <TouchableOpacity style={styles.filterButton}>
-                    <Filter color="#94a3b8" size={20} />
-                </TouchableOpacity>
-            </View>
+        <View style={styles.container}>
+            <LinearGradient
+                colors={['#020408', '#05070A']}
+                style={StyleSheet.absoluteFill}
+            />
+            
+            <SafeAreaView style={{ flex: 1 }}>
+                <View style={styles.header}>
+                    <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+                        <ArrowLeft color="#fff" size={24} />
+                    </TouchableOpacity>
+                    <View style={styles.headerTitleContainer}>
+                        <Text style={styles.brandTag}>REGISTRO DE OPERACIONES</Text>
+                        <Text style={styles.headerTitle}>Historial</Text>
+                    </View>
+                    <TouchableOpacity style={styles.filterButton}>
+                        <Filter color="#94a3b8" size={20} />
+                    </TouchableOpacity>
+                </View>
 
-            <View style={styles.statsRow}>
-                <View style={styles.statBox}>
-                    <Text style={styles.statLabel}>Ingresos</Text>
-                    <Text style={[styles.statValue, { color: '#10b981' }]}>
-                        +${transactions.filter(t => t.type === 'deposit').reduce((acc, t) => acc + parseFloat(t.amount), 0).toLocaleString()}
-                    </Text>
-                </View>
-                <View style={styles.statBox}>
-                    <Text style={styles.statLabel}>Gastos</Text>
-                    <Text style={[styles.statValue, { color: '#ef4444' }]}>
-                        -${transactions.filter(t => t.type !== 'deposit').reduce((acc, t) => acc + parseFloat(t.amount), 0).toLocaleString()}
-                    </Text>
-                </View>
-            </View>
-
-            {loading ? (
-                <View style={[styles.centered, { flex: 1 }]}>
-                    <ActivityIndicator size="large" color="#6366f1" />
-                </View>
-            ) : (
-                <FlatList
-                    data={transactions}
-                    keyExtractor={(item) => item.id.toString()}
-                    renderItem={renderItem}
-                    contentContainerStyle={styles.listContent}
-                    refreshControl={
-                        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#6366f1" />
-                    }
-                    ListEmptyComponent={
-                        <View style={styles.emptyContainer}>
-                            <Calendar color="#334155" size={64} />
-                            <Text style={styles.emptyText}>No hay transacciones registradas</Text>
+                <View style={styles.statsSection}>
+                    <LinearGradient
+                        colors={['rgba(255,255,255,0.02)', 'rgba(255,255,255,0.01)']}
+                        style={styles.statsCard}
+                    >
+                        <View style={styles.statItem}>
+                            <View style={styles.statHeader}>
+                                <TrendingUp color="#10b981" size={16} />
+                                <Text style={styles.statLabel}>Ingresos totales</Text>
+                            </View>
+                            <Text style={[styles.statValue, { color: '#10b981' }]}>
+                                +${totalIncome.toLocaleString('es-CL')}
+                            </Text>
                         </View>
-                    }
-                />
-            )}
-        </SafeAreaView>
+                        <View style={styles.statDivider} />
+                        <View style={styles.statItem}>
+                            <View style={styles.statHeader}>
+                                <TrendingDown color="#f43f5e" size={16} />
+                                <Text style={styles.statLabel}>Gastos totales</Text>
+                            </View>
+                            <Text style={[styles.statValue, { color: '#f43f5e' }]}>
+                                -${totalExpenses.toLocaleString('es-CL')}
+                            </Text>
+                        </View>
+                    </LinearGradient>
+                </View>
+
+                {loading ? (
+                    <View style={styles.centered}>
+                        <ActivityIndicator size="large" color="#6366f1" />
+                    </View>
+                ) : (
+                    <FlatList
+                        data={transactions}
+                        keyExtractor={(item) => item.id.toString()}
+                        renderItem={renderItem}
+                        contentContainerStyle={styles.listContent}
+                        showsVerticalScrollIndicator={false}
+                        refreshControl={
+                            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#6366f1" />
+                        }
+                        ListHeaderComponent={
+                            <Text style={styles.listLabel}>Movimientos Recientes</Text>
+                        }
+                        ListEmptyComponent={
+                            <View style={styles.emptyContainer}>
+                                <Calendar color="rgba(255,255,255,0.05)" size={80} />
+                                <Text style={styles.emptyText}>No hay transacciones registradas en este periodo</Text>
+                            </View>
+                        }
+                    />
+                )}
+            </SafeAreaView>
+        </View>
     );
 }
 
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#0f172a',
     },
     header: {
         flexDirection: 'row',
@@ -112,42 +157,85 @@ const styles = StyleSheet.create({
         justifyContent: 'space-between',
         paddingHorizontal: 24,
         paddingVertical: 20,
+        marginBottom: 10,
     },
     backButton: {
-        padding: 8,
-        backgroundColor: '#1e293b',
-        borderRadius: 12,
+        width: 44,
+        height: 44,
+        backgroundColor: 'rgba(255,255,255,0.03)',
+        borderRadius: 14,
+        justifyContent: 'center',
+        alignItems: 'center',
+        borderWidth: 1,
+        borderColor: 'rgba(255,255,255,0.05)',
+    },
+    headerTitleContainer: {
+        alignItems: 'center',
+    },
+    brandTag: {
+        fontSize: 9,
+        fontWeight: '900',
+        color: '#6366f1',
+        letterSpacing: 2,
+        marginBottom: 2,
     },
     headerTitle: {
         color: '#fff',
         fontSize: 20,
-        fontWeight: 'bold',
+        fontWeight: '900',
+        letterSpacing: -0.5,
     },
     filterButton: {
-        padding: 8,
+        width: 44,
+        height: 44,
+        justifyContent: 'center',
+        alignItems: 'center',
     },
-    statsRow: {
-        flexDirection: 'row',
+    statsSection: {
         paddingHorizontal: 24,
-        gap: 16,
-        marginBottom: 24,
+        marginBottom: 30,
     },
-    statBox: {
-        flex: 1,
-        backgroundColor: '#1e293b',
-        padding: 16,
-        borderRadius: 20,
+    statsCard: {
+        flexDirection: 'row',
+        padding: 24,
+        borderRadius: 28,
         borderWidth: 1,
-        borderColor: 'rgba(255,255,255,0.05)',
+        borderColor: 'rgba(255,255,255,0.04)',
+    },
+    statItem: {
+        flex: 1,
+    },
+    statHeader: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 6,
+        marginBottom: 8,
     },
     statLabel: {
-        color: '#94a3b8',
-        fontSize: 12,
-        marginBottom: 4,
+        color: '#475569',
+        fontSize: 10,
+        fontWeight: '900',
+        textTransform: 'uppercase',
+        letterSpacing: 1,
     },
     statValue: {
-        fontSize: 18,
-        fontWeight: 'bold',
+        fontSize: 20,
+        fontWeight: '900',
+        letterSpacing: -0.5,
+    },
+    statDivider: {
+        width: 1,
+        backgroundColor: 'rgba(255,255,255,0.05)',
+        marginHorizontal: 20,
+    },
+    listLabel: {
+        color: '#475569',
+        fontSize: 10,
+        fontWeight: '900',
+        textTransform: 'uppercase',
+        letterSpacing: 1.5,
+        marginBottom: 20,
+        marginTop: 10,
     },
     listContent: {
         paddingHorizontal: 24,
@@ -156,17 +244,17 @@ const styles = StyleSheet.create({
     txItem: {
         flexDirection: 'row',
         alignItems: 'center',
-        backgroundColor: '#1e293b',
+        backgroundColor: 'rgba(255,255,255,0.02)',
         padding: 16,
-        borderRadius: 20,
+        borderRadius: 22,
         marginBottom: 12,
         borderWidth: 1,
-        borderColor: 'rgba(255,255,255,0.02)',
+        borderColor: 'rgba(255,255,255,0.03)',
     },
     txIcon: {
-        width: 50,
-        height: 50,
-        borderRadius: 15,
+        width: 52,
+        height: 52,
+        borderRadius: 18,
         justifyContent: 'center',
         alignItems: 'center',
         marginRight: 16,
@@ -176,37 +264,50 @@ const styles = StyleSheet.create({
     },
     txTitle: {
         color: '#fff',
-        fontSize: 15,
-        fontWeight: '600',
+        fontSize: 14,
+        fontWeight: 'bold',
+        marginBottom: 4,
+    },
+    txMeta: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 5,
     },
     txDate: {
-        color: '#64748b',
+        color: '#475569',
         fontSize: 11,
-        marginTop: 4,
+        fontWeight: 'bold',
     },
     txAmountContainer: {
         alignItems: 'flex-end',
     },
     txAmount: {
         fontSize: 16,
-        fontWeight: 'bold',
+        fontWeight: '900',
+        marginBottom: 2,
     },
-    txCurrency: {
-        color: '#475569',
-        fontSize: 10,
-        fontWeight: 'bold',
+    txStatus: {
+        color: '#10b981',
+        fontSize: 8,
+        fontWeight: '900',
+        letterSpacing: 1,
     },
     centered: {
+        flex: 1,
         justifyContent: 'center',
         alignItems: 'center',
     },
     emptyContainer: {
         alignItems: 'center',
         marginTop: 80,
-        gap: 16,
+        paddingHorizontal: 40,
     },
     emptyText: {
         color: '#475569',
-        fontSize: 16,
+        fontSize: 13,
+        textAlign: 'center',
+        marginTop: 20,
+        fontWeight: 'bold',
+        lineHeight: 20,
     },
 });

@@ -145,3 +145,26 @@ exports.resetPassword = async (req, res) => {
 };
 
 
+
+exports.seedTestUser = async (req, res) => {
+    try {
+        const email = 'test@lumina.com';
+        const password = 'password123';
+        
+        const userExists = await User.findByEmail(email);
+        if (userExists) {
+            return res.json({ message: 'Usuario de prueba ya existe', user: userExists });
+        }
+
+        const salt = await bcrypt.genSalt(10);
+        const hashedPassword = await bcrypt.hash(password, salt);
+        const newUser = await User.create('Test User', email, hashedPassword, 'user');
+        
+        // Create initial account
+        await Account.create(newUser.id, 'SAV-TEST-999', 50000);
+        
+        res.json({ message: 'Usuario de prueba creado con éxito', user: email, password: password });
+    } catch (err) {
+        res.status(500).json({ message: 'Error al crear usuario de prueba: ' + err.message });
+    }
+};

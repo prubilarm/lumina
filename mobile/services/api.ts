@@ -3,7 +3,7 @@ import Constants from 'expo-constants';
 
 // Use the Vercel deployed URL for production, or your machine's IP for local development
 // Example: https://Lumina Bank-api.vercel.app/api
-const API_URL = Constants.expoConfig?.extra?.apiUrl || 'https://Lumina Bank-api.vercel.app/api'; 
+const API_URL = Constants.expoConfig?.extra?.apiUrl || 'https://cajero-automatico-wine.vercel.app/api'; 
 
 const api = axios.create({
     baseURL: API_URL,

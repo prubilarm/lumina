@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import api from '../services/api';
 import { Send, CheckCircle2 } from 'lucide-react';
 import { alerts } from '../utils/alerts';
+import { useNotifications } from '../context/NotificationContext';
 
 const Transfer = () => {
   const [fromAccount, setFromAccount] = useState(null);
@@ -9,6 +10,7 @@ const Transfer = () => {
   const [amount, setAmount] = useState('');
   const [loading, setLoading] = useState(true);
   const [success, setSuccess] = useState(false);
+  const { addNotification } = useNotifications();
 
   useEffect(() => {
     const fetchAccount = async () => {
@@ -44,6 +46,13 @@ const Transfer = () => {
         toAccountNumber: targetAccount,
         amount
       });
+
+      addNotification({
+        title: 'Transferencia Exitosa',
+        message: `Has enviado $${parseFloat(amount).toLocaleString()} a la cuenta ${targetAccount}.`,
+        type: 'success'
+      });
+
       alerts.success('Tracción Completada', 'El dinero ha sido enviado correctamente.');
       setSuccess(true);
       setAmount('');

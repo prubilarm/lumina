@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { X, ArrowRight, ArrowLeft, CreditCard, User, Wallet, ShieldCheck, Zap, Lock, Info, AlertTriangle, Plus, Users, Trash2 } from 'lucide-react';
 import api from '../utils/api';
 import Swal from 'sweetalert2';
+import { useNotifications } from '../context/NotificationContext';
 
 const TransferModal = ({ isOpen, onClose, onSuccess, accounts = [] }) => {
     const [step, setStep] = useState(1); 
@@ -13,6 +14,7 @@ const TransferModal = ({ isOpen, onClose, onSuccess, accounts = [] }) => {
     const [password, setPassword] = useState('');
     const [loading, setLoading] = useState(false);
     const [senderAccount, setSenderAccount] = useState('');
+    const { addNotification } = useNotifications();
     
     // Contacts State
     const [savedRecipients, setSavedRecipients] = useState([]);
@@ -122,9 +124,14 @@ const TransferModal = ({ isOpen, onClose, onSuccess, accounts = [] }) => {
                     color: '#f8fafc'
                 });
             }
+        } else if (transferType === 'aerum') {
+            setRecipient({ name: 'Banco Aerum', account_number: '', bank: 'Aerum' });
+            setIsAddingNew(true);
+            setStep(3);
         } else {
             setStep(3); // Go to third party selection/add
         }
+
     };
 
     const handleExecuteTransfer = async () => {
@@ -152,72 +159,106 @@ const TransferModal = ({ isOpen, onClose, onSuccess, accounts = [] }) => {
             // 1. Verify Password
             await api.post('/auth/verify-password', { password: pass });
 
-            // 2. Save Contact if requested and new
-            if (isAddingNew && shouldSave && newName) {
-                await api.post('/recipients', {
-                    name: newName,
-                    account_number: destinationCard,
-                    bank_name: 'Lumina Bank'
+            // 2. Perform Transfer
+            const numericAmount = parseFloat(amount);
+            if (numericAmount < 10) {
+                Swal.fire({ icon: 'warning', title: 'Monto insuficiente', text: 'La transferencia mínima es de $10 pesos.', background: '#0f172a', color: '#f8fafc' });
+                setLoading(false);
+                return;
+            }
+
+            if (transferType === 'aerum') {
+                // External Interbank Transfer to Aerum
+                const response = await fetch('https://banco-aerum.vercel.app/api/interbank/receive', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        account_number: destinationCard,
+                        amount: numericAmount,
+                        from_bank: 'Lumina Bank',
+                        description: description || 'Transferencia Interbancaria',
+                        api_key: 'AERUM-BRIDGE-2026'
+                    }),
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    // Record locally for history
+                    await api.post('/transactions/transfer', {
+                        amount: numericAmount,
+                        receiver_account_number: `AERUM-${destinationCard}`,
+                        description: `[INTERBANK] ${description || 'Transferencia a Banco Aerum'}`,
+                        sender_account_number: senderAccount
+                    });
+
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Transferencia Aerum Exitosa',
+                        text: `Se han enviado $${numericAmount.toLocaleString('es-CL')} al Banco Aerum con éxito.`,
+                        background: '#05070A',
+                        color: '#f8fafc',
+                        confirmButtonColor: '#0ea5e9'
+                    });
+                } else {
+                    throw new Error(data.message || 'El Banco Aerum rechazó la transacción');
+                }
+            } else {
+                // Internal Transfer
+                const response = await api.post('/transactions/transfer', {
+                    amount: numericAmount,
+                    receiver_card_number: transferType === 'third' ? destinationCard : undefined,
+                    receiver_account_number: transferType === 'own' ? recipient.account_number : undefined,
+                    description,
+                    sender_account_number: senderAccount
+                });
+
+                const tx = response.data.transaction;
+
+                addNotification({
+                    title: 'Transferencia Realizada',
+                    message: `Has enviado $${parseFloat(amount).toLocaleString('es-CL')} a ${recipient.name}.`,
+                    type: 'success'
+                });
+
+                Swal.fire({
+                    title: 'Transferencia Realizada con Éxito',
+                    html: `
+                      <div class="text-left space-y-4 p-4 bg-white/5 border border-white/10 rounded-2xl mt-4">
+                        <div class="flex justify-between items-center border-b border-white/5 pb-3">
+                            <span class="text-[10px] font-black text-slate-500 uppercase tracking-widest">Nº de Operación</span>
+                            <span class="text-[10px] font-mono text-cyan-400 font-bold">${String(tx.id).includes('-') ? tx.id.split('-')[0].toUpperCase() : tx.id}</span>
+                        </div>
+                        <div class="flex justify-between items-center border-b border-white/5 pb-3">
+                            <span class="text-[10px] font-black text-slate-500 uppercase tracking-widest">Monto Transferido</span>
+                            <span class="text-lg font-black text-white">$${parseFloat(amount).toLocaleString('es-CL')}</span>
+                        </div>
+                        <div class="flex justify-between items-center border-b border-white/5 pb-3">
+                            <span class="text-[10px] font-black text-slate-500 uppercase tracking-widest">Destinatario</span>
+                            <span class="text-xs font-bold text-slate-300">${recipient.name}</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-[10px] font-black text-slate-500 uppercase tracking-widest">Fecha y Hora</span>
+                            <span class="text-[10px] font-bold text-slate-500">${new Date(tx.created_at).toLocaleString('es-CL')}</span>
+                        </div>
+                      </div>
+                    `,
+                    icon: 'success',
+                    background: '#05070A',
+                    color: '#f8fafc',
+                    confirmButtonColor: '#0ea5e9',
                 });
             }
 
-        // 3. Perform Transfer
-        const numericAmount = parseFloat(amount);
-        if (numericAmount < 10) {
-            Swal.fire({ icon: 'warning', title: 'Monto insuficiente', text: 'La transferencia mínima es de $10 pesos.', background: '#0f172a', color: '#f8fafc' });
-            setLoading(false);
-            return;
-        }
-
-        const response = await api.post('/transactions/transfer', {
-            amount: numericAmount,
-            receiver_card_number: transferType === 'third' ? destinationCard : undefined,
-                receiver_account_number: transferType === 'own' ? recipient.account_number : undefined,
-                description,
-                sender_account_number: senderAccount
-            });
-
-            const tx = response.data.transaction;
-
-            Swal.fire({
-                title: 'Transferencia Realizada con Éxito',
-                html: `
-                  <div class="text-left space-y-4 p-4 bg-white/5 border border-white/10 rounded-2xl mt-4">
-                    <div class="flex justify-between items-center border-b border-white/5 pb-3">
-                        <span class="text-[10px] font-black text-slate-500 uppercase tracking-widest">Nº de Operación</span>
-                        <span class="text-[10px] font-mono text-cyan-400 font-bold">${String(tx.id).includes('-') ? tx.id.split('-')[0].toUpperCase() : tx.id}</span>
-                    </div>
-                    <div class="flex justify-between items-center border-b border-white/5 pb-3">
-                        <span class="text-[10px] font-black text-slate-500 uppercase tracking-widest">Monto Transferido</span>
-                        <span class="text-lg font-black text-white">$${parseFloat(amount).toLocaleString('es-CL')}</span>
-                    </div>
-                    <div class="flex justify-between items-center border-b border-white/5 pb-3">
-                        <span class="text-[10px] font-black text-slate-500 uppercase tracking-widest">Destinatario</span>
-                        <span class="text-xs font-bold text-slate-300">${recipient.name}</span>
-                    </div>
-                    <div class="flex justify-between items-center">
-                        <span class="text-[10px] font-black text-slate-500 uppercase tracking-widest">Fecha y Hora</span>
-                        <span class="text-[10px] font-bold text-slate-500">${new Date(tx.created_at).toLocaleString('es-CL')}</span>
-                    </div>
-                  </div>
-                  <p class="text-[8px] text-slate-600 mt-4 uppercase font-black tracking-widest text-center">Este comprobante sirve como respaldo legal de su operación.</p>
-                `,
-                icon: 'success',
-                background: '#05070A',
-                color: '#f8fafc',
-                confirmButtonColor: '#0ea5e9',
-                confirmButtonText: 'Cerrar Comprobante',
-                customClass: {
-                    popup: 'rounded-[2.5rem] border border-white/10 shadow-2xl'
-                }
-            });
             onSuccess();
             handleClose();
         } catch (err) {
             Swal.fire({
                 icon: 'error',
-                title: 'Error en la operación',
-                text: err.response?.data?.message || 'No se pudo completar la transferencia.',
+                title: 'Fallo en la Operación',
+                text: err.message || err.response?.data?.message || 'No se pudo completar la transferencia.',
                 background: '#0f172a',
                 color: '#f8fafc'
             });
@@ -225,6 +266,7 @@ const TransferModal = ({ isOpen, onClose, onSuccess, accounts = [] }) => {
             setLoading(false);
         }
     };
+
 
     const handleDeleteContact = async (id, e) => {
         e.stopPropagation();
@@ -313,9 +355,22 @@ const TransferModal = ({ isOpen, onClose, onSuccess, accounts = [] }) => {
                                         <p className="text-[10px] text-slate-500 mt-1">Otros destinatarios</p>
                                     </div>
                                 </button>
+                                <button 
+                                    onClick={() => { setTransferType('aerum'); setStep(2); }}
+                                    className="p-8 rounded-3xl bg-white/[0.02] border border-white/5 hover:border-cyan-500/30 hover:bg-white/[0.05] transition-all group flex flex-col items-center gap-4 text-center col-span-2"
+                                >
+                                    <div className="w-12 h-12 bg-indigo-500/10 rounded-2xl flex items-center justify-center text-indigo-400 group-hover:scale-110 transition-transform">
+                                        <Zap size={24} />
+                                    </div>
+                                    <div>
+                                        <p className="text-sm font-bold text-white">Banco Aerum</p>
+                                        <p className="text-[10px] text-slate-500 mt-1">Transferencia Interbancaria (External)</p>
+                                    </div>
+                                </button>
                             </div>
                         </div>
                     )}
+
 
                     {step === 2 && (
                         <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
@@ -410,50 +465,66 @@ const TransferModal = ({ isOpen, onClose, onSuccess, accounts = [] }) => {
                                 <div className="space-y-6 animate-in fade-in zoom-in duration-300">
                                     <div className="space-y-4">
                                         <div className="space-y-2">
-                                            <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Nombre del Destinatario</label>
+                                            <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">
+                                                {transferType === 'aerum' ? 'Confirmar Banco' : 'Nombre del Destinatario'}
+                                            </label>
                                             <input 
                                                 type="text" 
-                                                value={newName}
+                                                value={transferType === 'aerum' ? 'Banco Aerum' : newName}
                                                 onChange={(e) => setNewName(e.target.value)}
+                                                readOnly={transferType === 'aerum'}
                                                 placeholder="Ej: Juan Perez"
                                                 className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 px-6 text-sm text-white focus:border-cyan-500/50 outline-none transition-all"
                                             />
                                         </div>
                                         <div className="space-y-2">
-                                            <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Número de Tarjeta o Cuenta</label>
+                                            <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">
+                                                {transferType === 'aerum' ? 'Número de Cuenta Destino' : 'Número de Tarjeta o Cuenta'}
+                                            </label>
                                             <div className="relative">
                                                 <CreditCard className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500" size={18} />
                                                 <input 
                                                     type="text" 
                                                     value={destinationCard}
                                                     onChange={(e) => setDestinationCard(e.target.value)}
-                                                    placeholder="4532 XXXX XXXX XXXX"
+                                                    placeholder={transferType === 'aerum' ? "Ej: 10203040" : "4532 XXXX XXXX XXXX"}
                                                     className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 pl-12 pr-6 text-sm text-white focus:border-cyan-500/50 outline-none transition-all"
                                                 />
                                             </div>
                                         </div>
-                                        <label className="flex items-center gap-3 cursor-pointer group p-2">
-                                            <input 
-                                                type="checkbox" 
-                                                checked={shouldSave} 
-                                                onChange={(e) => setShouldSave(e.target.checked)}
-                                                className="hidden"
-                                            />
-                                            <div className={`w-5 h-5 rounded-md border flex items-center justify-center transition-all ${shouldSave ? 'bg-cyan-500 border-cyan-500' : 'border-white/10 bg-white/5'}`}>
-                                                {shouldSave && <ShieldCheck size={12} className="text-[#020408]" />}
-                                            </div>
-                                            <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest group-hover:text-white transition-colors">Guardar en mis contactos</span>
-                                        </label>
+                                        {transferType !== 'aerum' && (
+                                            <label className="flex items-center gap-3 cursor-pointer group p-2">
+                                                <input 
+                                                    type="checkbox" 
+                                                    checked={shouldSave} 
+                                                    onChange={(e) => setShouldSave(e.target.checked)}
+                                                    className="hidden"
+                                                />
+                                                <div className={`w-5 h-5 rounded-md border flex items-center justify-center transition-all ${shouldSave ? 'bg-cyan-500 border-cyan-500' : 'border-white/10 bg-white/5'}`}>
+                                                    {shouldSave && <ShieldCheck size={12} className="text-[#020408]" />}
+                                                </div>
+                                                <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest group-hover:text-white transition-colors">Guardar en mis contactos</span>
+                                            </label>
+                                        )}
                                     </div>
 
                                     <button 
-                                        onClick={handleValidateNew}
-                                        disabled={loading || !destinationCard || !newName}
+                                        onClick={() => {
+                                            if (transferType === 'aerum') {
+                                                if (!destinationCard) return;
+                                                setRecipient({ name: 'Banco Aerum', account_number: destinationCard, bank: 'Aerum' });
+                                                setStep(4);
+                                            } else {
+                                                handleValidateNew();
+                                            }
+                                        }}
+                                        disabled={loading || !destinationCard || (transferType !== 'aerum' && !newName)}
                                         className="w-full py-5 bg-cyan-600 hover:bg-cyan-500 disabled:opacity-50 text-white rounded-2xl text-xs font-black uppercase tracking-widest transition-all shadow-xl shadow-cyan-500/10 flex items-center justify-center gap-3"
                                     >
-                                        {loading ? 'Validando...' : 'Validar y Continuar'} <ArrowRight size={16} />
+                                        {loading ? 'Validando...' : 'Continuar al Monto'} <ArrowRight size={16} />
                                     </button>
                                 </div>
+
                             )}
                         </div>
                     )}

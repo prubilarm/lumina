@@ -53,7 +53,7 @@ const swaggerOptions = {
         },
         servers: [
             {
-                url: process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : `http://localhost:${PORT}`,
+                url: process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}/api` : `http://localhost:${PORT}/api`,
                 description: 'API Server',
             },
         ],
@@ -79,11 +79,19 @@ app.get('/', (req, res) => {
 });
 
 // Routes
-app.use('/auth', authRoutes);
-app.use('/user', userRoutes);
-app.use('/transactions', transactionRoutes);
-app.use('/admin', adminRoutes);
-app.use('/recipients', recipientRoutes);
+const apiRouter = express.Router();
+apiRouter.use('/auth', authRoutes);
+apiRouter.use('/user', userRoutes);
+apiRouter.use('/transactions', transactionRoutes);
+apiRouter.use('/admin', adminRoutes);
+apiRouter.use('/recipients', recipientRoutes);
+
+// Apply prefix
+app.use('/api', apiRouter);
+
+// Fallback for direct routes (optional, but good for backward compatibility if needed)
+// app.use('/auth', authRoutes); 
+
 
 // Error Handling Middleware
 app.use((err, req, res, next) => {

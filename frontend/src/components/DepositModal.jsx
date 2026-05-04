@@ -1,12 +1,14 @@
 import React, { useState } from 'react';
 import { X, DollarSign, Wallet, ShieldCheck, ArrowRight, Zap } from 'lucide-react';
 import api from '../utils/api';
+import { useNotifications } from '../context/NotificationContext';
 
 const DepositModal = ({ isOpen, onClose, onSuccess, accounts }) => {
     const [amount, setAmount] = useState('');
     const [accountIndex, setAccountIndex] = useState(0);
     const [isLoading, setIsLoading] = useState(false);
     const [success, setSuccess] = useState(false);
+    const { addNotification } = useNotifications();
 
     if (!isOpen) return null;
 
@@ -19,6 +21,13 @@ const DepositModal = ({ isOpen, onClose, onSuccess, accounts }) => {
                 account_number: accounts[accountIndex].account_number,
                 description: 'Abono instantáneo Lumina-Chain'
             });
+
+            addNotification({
+                title: 'Depósito Exitoso',
+                message: `Has abonado $${parseFloat(amount).toLocaleString()} a tu cuenta ${accounts[accountIndex].account_number}.`,
+                type: 'success'
+            });
+
             setSuccess(true);
             setTimeout(() => {
                 setSuccess(false);

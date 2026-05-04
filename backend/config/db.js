@@ -6,31 +6,43 @@ let dbInstance;
 if (process.env.DATABASE_URL) {
     let rawUrl = process.env.DATABASE_URL.trim();
     
-    // Fix para el símbolo # antes de procesar
-    if (rawUrl.includes('#')) {
-        rawUrl = rawUrl.replace(/#/g, '%23');
-    }
-
+    // Si la URL es de Supabase y contiene caracteres especiales, la procesamos con cuidado
+    let config;
     try {
-        const url = new URL(rawUrl);
+        // Intentamos un regex más flexible
+        // Soporta postgres:// y postgresql://
+        const urlMatch = rawUrl.match(/^(?:postgres|postgresql):\/\/([^:]+):(.+)@([^:/@]+):(\d+)\/(.+)$/);
         
-        // Extraemos los componentes de forma manual y limpia
-        const dbUser = decodeURIComponent(url.username);
-        const dbPassword = decodeURIComponent(url.password);
-        const dbHost = url.hostname;
-        // Forzamos puerto 5432 si es el pooler de Supabase para máxima compatibilidad
-        const dbPort = dbHost.includes('pooler.supabase.com') ? 5432 : (url.port || 5432);
-        const dbName = url.pathname.split('/')[1] || 'postgres';
+        if (urlMatch) {
+            const [_, user, password, host, port, database] = urlMatch;
+            config = {
+                user: decodeURIComponent(user),
+                password: decodeURIComponent(password),
+                host: host,
+                port: parseInt(port),
+                database: database,
+                ssl: { rejectUnauthorized: false },
+                connectionTimeoutMillis: 15000,
+            };
+        } else {
+            // Fallback a URL parser con escape de caracteres especiales (#, $, ,)
+            let processedUrl = rawUrl
+                .replace(/#/g, '%23')
+                .replace(/\$/g, '%24')
+                .replace(/,/g, '%2C');
+                
+            const url = new URL(processedUrl);
+            config = {
+                user: decodeURIComponent(url.username),
+                password: decodeURIComponent(url.password),
+                host: url.hostname,
+                port: url.host.includes('pooler.supabase.com') ? 5432 : (url.port || 5432),
+                database: url.pathname.split('/')[1] || 'postgres',
+                ssl: { rejectUnauthorized: false },
+                connectionTimeoutMillis: 15000,
+            };
+        }
 
-        const config = {
-            user: dbUser,
-            password: dbPassword,
-            host: dbHost,
-            port: dbPort,
-            database: dbName,
-            ssl: { rejectUnauthorized: false },
-            connectionTimeoutMillis: 15000,
-        };
 
         const pool = new Pool(config);
         
@@ -73,12 +85,23 @@ if (process.env.DATABASE_URL) {
                 }
             }
         };
-        console.log(`✅ DB Configurada: ${dbUser}@${dbHost}:${dbPort}/${dbName}`);
+        console.log(`✅ DB Configurada: ${config.user}@${config.host}:${config.port}/${config.database}`);
     } catch (e) {
         console.error('⚠️ Error crítico al configurar DB:', e.message);
         // Fallback básico
-        const pool = new Pool({ connectionString: process.env.DATABASE_URL, ssl: { rejectUnauthorized: false } });
-        dbInstance = { query: (text, params) => pool.query(text, params), pool };
+        const pool = new Pool({ connectionString: rawUrl.replace(/#/g, '%23'), ssl: { rejectUnauthorized: false } });
+        dbInstance = { 
+            query: (text, params) => pool.query(text, params), 
+            pool,
+            testConnection: async () => {
+                try {
+                    const res = await pool.query('SELECT NOW()');
+                    return { success: true, serverTime: res.rows[0].now };
+                } catch (e) {
+                    return { success: false, error: e.message };
+                }
+            }
+        };
     }
 } else {
     // Mock mode para desarrollo local sin DB

@@ -72,7 +72,7 @@ exports.generateStatement = async (req, res) => {
         const { id } = req.params;
         res.json({ 
             message: 'Certificado bancario generado con éxito',
-            downloadUrl: `https://Lumina Bank-bank.vercel.app/api/admin/users/${id}/statement/pdf`
+            downloadUrl: `/api/admin/users/${id}/statement/pdf`
         });
     } catch (err) {
         res.status(500).json({ message: err.message });

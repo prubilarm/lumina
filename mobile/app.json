@@ -1,11 +1,11 @@
 {
   "expo": {
     "name": "Lumina Bank Mobile",
-    "slug": "Lumina Bank-mobile",
+    "slug": "sentendar-mobile",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "Lumina Bank",
+    "scheme": "luminabank",
     "userInterfaceStyle": "dark",
     "newArchEnabled": false,
     "splash": {
@@ -18,10 +18,10 @@
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/images/adaptive-icon.png",
+        "foregroundImage": "./assets/images/android-icon-foreground.png",
         "backgroundColor": "#0f172a"
       },
-      "package": "com.Lumina Bank.mobile"
+      "package": "com.luminabank.mobile"
     },
     "web": {
       "bundler": "metro",
@@ -38,16 +38,19 @@
           "resizeMode": "contain",
           "backgroundColor": "#0f172a"
         }
-      ]
+      ],
+  
     ],
     "experiments": {
       "typedRoutes": true
     },
     "extra": {
-      "apiUrl": "https://Lumina Bank-bank.vercel.app/api",
+      "apiUrl": "https://cajero-automatico-wine.vercel.app/api",
+      "router": {},
       "eas": {
-        "projectId": "2e11a119-a09f-4895-9a40-82181d015a31"
+        "projectId": "fe1f76e6-c25d-4990-8ba2-07db17c1fea1"
       }
-    }
+    },
+    "owner": "rubilarp57"
   }
 }
